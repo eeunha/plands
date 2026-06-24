@@ -27,8 +27,8 @@ const calendarOptions = reactive({
   locale: 'ko',
   events: [
     // 필요하다면 이곳에 MyCalendar가 자체적으로 표시할 이벤트를 넣을 수 있습니다.
-    { title: '내장 이벤트 1', date: '2025-06-26' },
-    { title: '내장 이벤트 2', date: '2025-06-27' },
+    { title: '내장 이벤트 1', date: '2026-06-26' },
+    { title: '내장 이벤트 2', date: '2026-06-27' },
   ],
 
   // --- dayCellClassNames 부분 제거 ---

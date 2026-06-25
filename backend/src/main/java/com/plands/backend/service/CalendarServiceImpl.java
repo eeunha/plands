@@ -2,54 +2,28 @@ package com.plands.backend.service;
 
 import com.plands.backend.dto.request.CalendarRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
+import com.plands.backend.mapper.TodoMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor // final이 붙은 todoMapper의 생성자를 자동으로 주입해 줌
 public class CalendarServiceImpl implements CalendarService {
 
+    private final TodoMapper todoMapper;
+
     @Override
-    public List<CalendarResponseDto> getCalendarList(CalendarRequestDto calendarRequestDto) {
-        // 프론트가 보낸 값 잘 넘어오나 확인용 로그
-        System.out.println("====== 서비스 레이어 도착 ======");
-        System.out.println("조회 타겟 연도: " + calendarRequestDto.getYear());
-        System.out.println("조회 타겟 월: " + calendarRequestDto.getMonth());
+    public List<CalendarResponseDto> getCalendarList(String startDate, String endDate) {
+        System.out.println("====== 캘린더 서비스 레이어 진짜 DB 호출 ======");
+        System.out.println("조회 기간(한 달): " + startDate + " ~ " + endDate);
 
-        List<CalendarResponseDto> mockList = new ArrayList<>();
+        // 테스트용 계정 id 고정
+        Long mockMemberId = 1L;
 
-        // 가짜 데이터 1번
-        CalendarResponseDto event1 = new CalendarResponseDto();
-        event1.setCalendarId(1L);
-        event1.setTitle("점심 굶고 코딩하는 은하");
-        event1.setDate("2026-06-24");
-        event1.setTime("11:50 AM");
-        event1.setDescription("열정이 너무 넘쳐서 사수를 당황하게 만듦");
-        mockList.add(event1);
-
-        // 가짜 데이터 2번
-        CalendarResponseDto event2 = new CalendarResponseDto();
-        event2.setCalendarId(2L);
-        event2.setTitle("오토코야마 사케 마시기");
-        event2.setDate("2026-06-26");
-        event2.setTime("08:00 PM");
-        event2.setDescription("검은색 라벨에 흰색 글씨 써진 걸로 마시기 🍶");
-        mockList.add(event2);
-
-        return mockList;
+        // 가짜 데이터 mockList 로직은 싹 지우고, 진짜 한 달 치 쿼리 호출 결과를 리턴
+        return todoMapper.selectCalendarList(mockMemberId, startDate, endDate);
     }
-
-//    private final CalendarMapper calendarMapper;
-
-//    public CalendarServiceImpl(CalendarMapper calendarMapper) {
-//        this.calendarMapper = calendarMapper;
-//    };
-
-//    @Override
-//    public List<CalendarResponseDto> getCalendarList(CalendarRequestDto calendarRequestDto) {
-//        return calendarMapper.selectCalendarList(calendarRequestDto);
-//    }
-
-
 }

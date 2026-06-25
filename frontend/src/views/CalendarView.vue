@@ -4,64 +4,42 @@ import MyCalendar from '@/components/my-calendar/MyCalendar.vue'
 import DailySchedule from '@/components/my-calendar/DailySchedule.vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
 
+// 컴포저블 함수에서 상태(allEvents)와 API 호출 함수(fetchCalendarList) 가져오기
 const { allEvents, fetchCalendarList } = useCalendarApi()
 
+// 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
 
-// const allEvents = ref([
-//   {
-//     id: '1',
-//     title: '팀 미팅',
-//     date: '2026-06-26',
-//     time: '10:00 AM',
-//     description: '주간 업무 논의',
-//   },
-//   {
-//     id: '2',
-//     title: '보고서 제출',
-//     date: '2026-06-26',
-//     time: '05:00 PM',
-//     description: '월간 보고서 마감',
-//   },
-//   { id: '3', title: '운동하기', date: '2026-06-26', time: '07:00 PM' },
-//   {
-//     id: '4',
-//     title: '친구와 저녁',
-//     date: '2026-06-27',
-//     time: '07:30 PM',
-//     description: '강남역 맛집',
-//   },
-//   { id: '5', title: '병원 예약', date: '2026-06-28', time: '02:00 PM' },
-//   { id: '6', title: 'FullCalendar 학습', date: '2025-06-29' },
-//   { id: '7', title: '장보기', date: '2026-06-29' },
-// ])
-
+// 1. 백엔드에서 받은 한 달치(allEvents) 중, 선택된 날짜 하루치만 칼같이 필터링
 const filteredEvents = computed(() => {
+  // 자바스크립트 Date 객체를 '2026-06-25' 형태의 문자열로 안전하게 변환하는 로직
   const offset = selectedDate.value.getTimezoneOffset() * 60000 // 영국과 한국의 시간차(ms)
   const selectedDateStr = new Date(selectedDate.value.getTime() - offset)
     .toISOString()
     .split('T')[0]
 
-  return allEvents.value.filter((event) => event.date === selectedDateStr)
+  // 백엔드 DTO의 날짜 변수명이 start이므로 event.start로 매핑해서 비교해야 함!
+  // 혹시 몰라 만약의 에러를 방지하기 위해 allEvents가 비어있을 때의 예외 처리 추가
+  if (!allEvents.value) return []
+  return allEvents.value.filter((event) => event.start === selectedDateStr)
 })
 
-const handleDateSelected = (dateInfo) => {
-  selectedDate.value = dateInfo.date
-  console.log('CalendarView: 선택된 날짜:', selectedDate.value)
+// 2. 달력에서 날짜를 클릭했을 때 실행될 함수
+const handleDateSelected = (dateStr) => {
+  // 자식(MyCalendar)이 '2026-06-25' 문자열을 쏴주면, 그걸 받아 Date 객체로 변환해 저장
+  selectedDate.value = new Date(dateStr)
+  console.log('CalendarView: 유저가 클릭한 날짜 ->', dateStr)
 }
 
-const refreshPage = () => {
-  const currentYear = selectedDate.value.getFullYear()
-  const currentMonth = selectedDate.value.getMonth() + 1
-
-  console.log(`CalendarView: 백엔드로 ${currentYear}년 ${currentMonth}월 일정 조회 요청!`)
-
-  fetchCalendarList({ year: currentYear, month: currentMonth })
+// 3. 자식(MyCalendar) 달력이 켜지거나 월을 바꿨을 때, 기간을 받아와서 백엔드 찌르는 함수
+const handleEventsLoaded = async ({ startDate, endDate }) => {
+  console.log(`CalendarView: 달력이 감지한 기간으로 백엔드 조회 요청! [${startDate} ~ ${endDate}]`)
+  // 컴포저블 API 호출 (객체 구조로 전달)
+  await fetchCalendarList({ startDate, endDate })
 }
 
 onMounted(() => {
   console.log('CalendarView가 마운트되었습니다.')
-  refreshPage()
 })
 </script>
 
@@ -70,7 +48,12 @@ onMounted(() => {
     <h2>나의 일정</h2>
     <div class="content-wrapper">
       <div class="calendar-section">
-        <MyCalendar @date-selected="handleDateSelected" />
+        <MyCalendar
+          :events="allEvents"
+          :selected-date="selectedDate"
+          @date-selected="handleDateSelected"
+          @events-loaded="handleEventsLoaded"
+        />
       </div>
       <div class="schedule-section">
         <DailySchedule :selected-date="selectedDate" :events="filteredEvents" />

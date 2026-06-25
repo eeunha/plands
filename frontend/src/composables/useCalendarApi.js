@@ -6,14 +6,14 @@ export function useCalendarApi() {
   const loading = ref(false)
   const error = ref(null)
 
-  const fetchCalendarList = async ({year, month}) => {
+  const fetchCalendarList = async ({startDate, endDate}) => {
     loading.value = true
     error.value = null
     try {
-      const res = await api.get('/api/calendar', {
-        params: { year, month },
+      const res = await api.get('/api/calendar/todo', {
+        params: { startDate, endDate },
       })
-      allEvents.value = res.data.allEvents
+      allEvents.value = res.data
     } catch (err) {
       error.value = err
       console.error('달력 데이터 가져오기 실패:', err)

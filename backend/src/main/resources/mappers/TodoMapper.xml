@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.plands.backend.mapper.TodoMapper">
+
+    <resultMap id="CalendarTodoMap" type="com.plands.backend.dto.response.CalendarResponseDto">
+        <id property="id" column="todo_id"/>
+        <result property="title" column="todo_type_name"/>
+        <result property="start" column="due_date"/>
+        <result property="color" column="color_code"/>
+        <result property="todoTypeId" column="todo_type_id"/>
+
+        <collection property="plants" ofType="com.plands.backend.dto.response.PlantInfoDto">
+            <result property="plantName" column="plant_name"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectCalendarList" resultMap="CalendarTodoMap">
+        SELECT
+            t.todo_id,
+            t.due_date,
+            tt.todo_type_id,
+            tt.name AS todo_type_name,
+            tt.color_code,
+            mp.member_plant_id,
+            p.name AS plant_name
+        FROM todo t
+                 JOIN todo_type tt
+                      ON t.todo_type_id = tt.todo_type_id
+                 LEFT JOIN todo_member_plant tmp
+                           ON t.todo_id = tmp.todo_id
+                 LEFT JOIN member_plant mp
+                           ON tmp.member_plant_id = mp.member_plant_id AND mp.is_deleted = FALSE
+                 LEFT JOIN plant p
+                           ON mp.plant_id = p.plant_id AND p.is_deleted = FALSE
+        WHERE
+            t.member_id = #{memberId}
+          AND t.is_deleted = FALSE
+          AND t.due_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY t.due_date ASC, tt.todo_type_id ASC
+    </select>
+
+</mapper>

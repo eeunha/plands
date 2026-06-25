@@ -2,11 +2,19 @@
   <div class="daily-schedule">
     <h3>{{ formattedDate }} 일정</h3>
     <p v-if="events.length === 0" class="no-events">{{ formattedDate }}에는 일정이 없습니다.</p>
+
     <ul v-else>
-      <li v-for="event in events" :key="event.id">
-        <strong>{{ event.title }}</strong>
-        <span v-if="event.time"> ({{ event.time }})</span>
-        <p v-if="event.description">{{ event.description }}</p>
+      <li v-for="event in events" :key="event.id" class="schedule-item">
+        <div class="item-header">
+          <span class="color-badge" :style="{ backgroundColor: event.color }"></span>
+          <strong class="event-title">{{ event.title }}</strong>
+        </div>
+
+        <div v-if="event.plants && event.plants.length > 0" class="plant-list">
+          <span v-for="(plant, index) in event.plants" :key="index" class="plant-badge">
+            🌿 {{ plant.plantName }}
+          </span>
+        </div>
       </li>
     </ul>
   </div>
@@ -17,7 +25,6 @@ import { computed } from 'vue'
 import { format } from 'date-fns' // 날짜 포맷팅을 위한 라이브러리 사용 (선택 사항)
 import { ko } from 'date-fns/locale' // 한국어 로케일
 
-// --- Props 정의 (부모로부터 받을 데이터) ---
 // 이 컴포넌트는 부모로부터 'selectedDate'와 'events'를 받습니다.
 const props = defineProps({
   selectedDate: {
@@ -30,8 +37,7 @@ const props = defineProps({
   },
 })
 
-// --- 계산된 속성 (Computed Property) ---
-// selectedDate prop을 받아서 보기 좋은 형태로 포맷팅합니다.
+// 날짜 포맷팅 (ex: 2026년 6월 25일 (목))
 const formattedDate = computed(() => {
   // 'yyyy년 M월 d일 (EEE)' 형태로 포맷 (예: 2025년 6월 26일 (목))
   return format(props.selectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko })

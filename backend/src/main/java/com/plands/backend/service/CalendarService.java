@@ -6,5 +6,5 @@ import com.plands.backend.dto.response.CalendarResponseDto;
 import java.util.List;
 
 public interface CalendarService {
-    List<CalendarResponseDto> getCalendarList(CalendarRequestDto calendarRequestDto);
+    List<CalendarResponseDto> getCalendarList(String startDate, String endDate);
 }

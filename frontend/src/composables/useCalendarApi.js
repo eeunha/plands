@@ -6,7 +6,7 @@ export function useCalendarApi() {
   const loading = ref(false)
   const error = ref(null)
 
-  const fetchCalendarList = async ({startDate, endDate}) => {
+  const fetchCalendarList = async ({ startDate, endDate }) => {
     loading.value = true
     error.value = null
     try {
@@ -14,9 +14,27 @@ export function useCalendarApi() {
         params: { startDate, endDate },
       })
       allEvents.value = res.data
+      console.log(allEvents.value)
     } catch (err) {
       error.value = err
       console.error('달력 데이터 가져오기 실패:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 새 할 일 등록 함수 (POST)
+  const createTodo = async (todoData) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.post('/api/calendar/todo', todoData)
+      console.log('할 일 등록 성공:', res.data)
+      return true // 성공하면 컴포넌트(모달)단에 성공 시그널을 보냄!
+    } catch (err) {
+      error.value = err
+      console.error('할 일 등록 실패:', err)
+      return false;
     } finally {
       loading.value = false
     }
@@ -27,5 +45,6 @@ export function useCalendarApi() {
     loading,
     error,
     fetchCalendarList,
+    createTodo,
   }
 }

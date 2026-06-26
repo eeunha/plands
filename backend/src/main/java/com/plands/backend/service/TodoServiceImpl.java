@@ -1,10 +1,14 @@
 package com.plands.backend.service;
 
 import com.plands.backend.dto.request.TodoRequestDto;
+import com.plands.backend.dto.response.MemberPlantResponseDto;
+import com.plands.backend.dto.response.TodoTypeResponseDto;
 import com.plands.backend.mapper.TodoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,5 +31,15 @@ public class TodoServiceImpl implements TodoService {
                 todoMapper.insertTodoMemberPlant(todoRequestDto.getTodoId(), memberPlantId);
             }
         }
+    }
+
+    @Override
+    public List<TodoTypeResponseDto> getTodoTypeList() {
+        return todoMapper.selectTodoTypes();
+    }
+
+    @Override
+    public List<MemberPlantResponseDto> getMemberPlantList(Long memberId) {
+        return todoMapper.selectMemberPlants(memberId);
     }
 }

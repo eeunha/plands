@@ -2,6 +2,8 @@ package com.plands.backend.controller;
 
 import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
+import com.plands.backend.dto.response.MemberPlantResponseDto;
+import com.plands.backend.dto.response.TodoTypeResponseDto;
 import com.plands.backend.service.CalendarService;
 import com.plands.backend.service.TodoService;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +46,23 @@ public class CalendarController {
 
         // 💡 성공적으로 등록되면 200 OK 사인과 함께 완료 메시지 전송!
         return ResponseEntity.ok("일정이 성공적으로 등록되었습니다.");
+    }
+
+    // 할 일 종류 목록 전체 조회 API
+    @GetMapping("/todo-types")
+    public ResponseEntity<List<TodoTypeResponseDto>> getTodoTypes() {
+        System.out.println("====== 할 일 종류 조회 컨트롤러 진입 ======");
+
+        List<TodoTypeResponseDto> list = todoService.getTodoTypeList();
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/member-plants")
+    public ResponseEntity<List<MemberPlantResponseDto>> getMemberPlants(@RequestParam("memberId") Long memberId) {
+        System.out.println("====== 회원 식물 목록 조회 컨트롤러 진입 ======");
+        System.out.println("요청 회원 번호 -> memberId: " + memberId);
+
+        List<MemberPlantResponseDto> list = todoService.getMemberPlantList(memberId);
+        return ResponseEntity.ok(list);
     }
 }

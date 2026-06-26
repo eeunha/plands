@@ -1,6 +1,5 @@
 package com.plands.backend.controller;
 
-import com.plands.backend.dto.request.CalendarRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.service.CalendarService;
 import lombok.RequiredArgsConstructor;
@@ -10,9 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/calendar")

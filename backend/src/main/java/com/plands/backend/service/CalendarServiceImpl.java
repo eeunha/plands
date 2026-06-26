@@ -1,12 +1,10 @@
 package com.plands.backend.service;
 
-import com.plands.backend.dto.request.CalendarRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.mapper.TodoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

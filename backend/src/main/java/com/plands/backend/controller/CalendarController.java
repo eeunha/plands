@@ -1,13 +1,12 @@
 package com.plands.backend.controller;
 
+import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.service.CalendarService;
+import com.plands.backend.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,6 +16,7 @@ import java.util.List;
 public class CalendarController {
 
     private final CalendarService calendarService;
+    private final TodoService todoService;
 
     // 프론트(FullCalendar)가 요청하는 기간(startDate, endDate)을 파라미터로 직접 바인딩함
     @GetMapping("/todo")
@@ -30,5 +30,19 @@ public class CalendarController {
 
         // 상태 코드 200(OK)과 함께 프론트엔드로 응답 전송
         return ResponseEntity.ok(todoList);
+    }
+
+    // 새 일정 등록 API
+    @PostMapping("/todo")
+    public ResponseEntity<String> createTodo(@RequestBody TodoRequestDto todoRequestDto) { // RequestBody는 http body 내의 json 속 데이터를 dto에 매핑
+
+        System.out.println("====== 일정 등록 컨트롤러 진입 ======");
+        System.out.println("프론트에서 넘어온 데이터: " + todoRequestDto.toString());
+
+        // 💡 @RequestBody가 프론트에서 쏜 JSON 데이터를 자바 DTO 객체(참조변수 주소값)로 찰떡같이 변환해줘!
+        todoService.createTodo(todoRequestDto);
+
+        // 💡 성공적으로 등록되면 200 OK 사인과 함께 완료 메시지 전송!
+        return ResponseEntity.ok("일정이 성공적으로 등록되었습니다.");
     }
 }

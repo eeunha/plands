@@ -1,5 +1,6 @@
 package com.plands.backend.mapper;
 
+import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,4 +15,10 @@ public interface TodoMapper {
             @Param("startDate") String startDate,
             @Param("endDate") String endDate
     );
+
+    // 1. todo 테이블에 기본 일정 정보 저장
+    int insertTodo(TodoRequestDto todoRequestDto);
+
+    // 2. 생성된 todoId와 선택된 식물 ID 한 쌍을 매핑 테이블에 저장
+    int insertTodoMemberPlant(@Param("todoId") Long todoId, @Param("memberPlantId") Long memberPlantId);
 }

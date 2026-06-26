@@ -40,4 +40,28 @@
         ORDER BY t.due_date ASC, tt.todo_type_id ASC
     </select>
 
+    <insert id="insertTodo" parameterType="com.plands.backend.dto.request.TodoRequestDto">
+        <selectKey keyProperty="todoId" resultType="long" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO todo (
+            member_id,
+            todo_type_id,
+            due_date
+        ) VALUES (
+            #{memberId},
+            #{todoTypeId},
+            #{dueDate}
+        )
+    </insert>
+
+    <insert id="insertTodoMemberPlant">
+        INSERT INTO todo_member_plant (
+            todo_id,
+            member_plant_id
+        ) VALUES (
+            #{todoId},
+            #{memberPlantId}
+        )
+    </insert>
 </mapper>

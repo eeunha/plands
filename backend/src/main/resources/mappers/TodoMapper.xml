@@ -64,4 +64,27 @@
             #{memberPlantId}
         )
     </insert>
+
+    <select id="selectTodoTypes" resultType="com.plands.backend.dto.response.TodoTypeResponseDto">
+        SELECT
+            todo_type_id AS todoTypeId,
+            name AS typeName,
+            color_code AS colorCode
+        FROM
+            todo_type
+        ORDER BY
+            todo_type_id ASC
+    </select>
+
+    <select id="selectMemberPlants" resultType="com.plands.backend.dto.response.MemberPlantResponseDto">
+        SELECT
+            mp.member_plant_id AS memberPlantId,
+            p.name AS plantName
+        FROM member_plant mp
+        LEFT JOIN plant p ON mp.plant_id = p.plant_id
+        WHERE mp.member_id = #{memberId}
+            AND mp.is_deleted = 0
+        ORDER BY
+            mp.member_plant_id ASC
+    </select>
 </mapper>

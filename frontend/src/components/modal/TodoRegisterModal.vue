@@ -23,6 +23,11 @@ const { createTodo } = useCalendarApi()
 const todoTypes = ref([])
 const memberPlants = ref([])
 
+// 💡 커스텀 드롭다운의 열림 상태와 선택된 텍스트를 관리할 변수
+const isTypeDropdownOpen = ref(false)
+const selectedTypeName = ref('할 일을 선택해주세요.')
+const selectedColorCode = ref('')
+
 // 2. 폼 데이터를 하나의 객체로 이쁘게 관리 (할 일 중심 네이밍!)
 const todoForm = reactive({
   todoTypeId: null,
@@ -34,8 +39,8 @@ const todoForm = reactive({
 onMounted(async () => {
   try {
     const [typeRes, plantRes] = await Promise.all([
-      api.get('/api/todo-types'),
-      api.get(`/api/member-plants?memberId=${authStore.memberId}`),
+      api.get('/api/calendar/todo-types'),
+      api.get(`/api/calendar/member-plants?memberId=${authStore.memberId}`),
     ])
     todoTypes.value = typeRes.data
     memberPlants.value = plantRes.data
@@ -43,6 +48,19 @@ onMounted(async () => {
     console.error('드롭다운 목록 로드 실패:', err)
   }
 })
+
+// 할 일 종류를 클릭했을 때 실행할 함수
+const selectTodoType = (type) => {
+  todoForm.todoTypeId = type.todoTypeId
+  selectedTypeName.value = type.typeName
+  selectedColorCode.value = type.colorCode
+  isTypeDropdownOpen.value = false // 메뉴 닫기
+}
+
+// 커스텀 드롭다운 토글 함수
+const toggleTypeDropdown = () => {
+  isTypeDropdownOpen.value = !isTypeDropdownOpen.value
+}
 
 // 4. 할 일 저장 함수 (동기분의 upload 함수 자리에 들어가는 핵심 로직!)
 const saveTodo = async () => {
@@ -94,12 +112,31 @@ const saveTodo = async () => {
       <!-- 할 일 종류 선택 (드롭다운) -->
       <div class="form-group">
         <label>할 일 종류</label>
-        <select v-model="todoForm.todoTypeId" class="modal-select">
-          <option :value="null" disabled>할 일을 선택해주세요</option>
-          <option v-for="type in todoTypes" :key="type.todoTypeId" :value="type.todoTypeId">
-            {{ type.typeName }}
-          </option>
-        </select>
+        <div class="custom-dropdown">
+          <button type="button" class="dropdown-toggle" @click="toggleTypeDropdown">
+            <span
+              v-if="todoForm.todoTypeId"
+              class="color-dot"
+              :style="{ backgroundColor: selectedColorCode }"
+            ></span>
+            <span :class="{ 'placeholder-text': !todoForm.todoTypeId }">
+              {{ selectedTypeName }}
+            </span>
+            <span class="arrow">▼</span>
+          </button>
+
+          <ul v-if="isTypeDropdownOpen" class="dropdown-menu-list">
+            <li
+              v-for="type in todoTypes"
+              :key="type.todoTypeId"
+              @click="selectTodoType(type)"
+              class="dropdown-item"
+            >
+              <span class="color-dot" :style="{ backgroundColor: type.colorCode }"></span>
+              <span class="item-text">{{ type.typeName }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <!-- 식물 다중 선택 섹션 (체크박스 스타일) -->
@@ -118,7 +155,6 @@ const saveTodo = async () => {
         <p v-if="memberPlants.length === 0" class="empty-text">등록된 식물이 없습니다.</p>
       </div>
 
-      <!-- 하단 버튼들 (동기분 스타일 적용) -->
       <div class="modal-buttons">
         <button
           class="modal-button primary"
@@ -134,7 +170,7 @@ const saveTodo = async () => {
     </div>
   </div>
 </template>
-<style>
+<style scoped>
 /* 💡 할 일 폼에 맞는 간단한 스타일만 추가 (기존 modal.css와 결합됨) */
 .form-group {
   margin-bottom: 20px;
@@ -146,14 +182,87 @@ const saveTodo = async () => {
   margin-bottom: 8px;
   color: #333;
 }
-.modal-input,
-.modal-select {
+.modal-input {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
 }
+/* 🌟 커스텀 드롭다운 디자인 */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+.dropdown-toggle {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 14px;
+}
+.placeholder-text {
+  color: #999;
+}
+
+.arrow {
+  margin-left: auto; /* 화살표를 오른쪽 끝으로 밀기 */
+  font-size: 10px;
+  color: #aaa;
+}
+
+/* 툭 떨어지는 목록 상자 */
+.dropdown-menu-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0;
+  margin: 4px 0 0 0;
+  list-style: none;
+  max-height: 160px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+/* 🎨 은하가 원했던 완벽한 동그라미 컬러칩 CSS */
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 10px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.item-text {
+  color: #333;
+  font-size: 14px;
+}
+
+/* 식물 체크박스 리스트 관련 */
 .plant-checkbox-list {
   max-height: 120px;
   overflow-y: auto;

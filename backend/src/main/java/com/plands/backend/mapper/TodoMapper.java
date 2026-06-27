@@ -18,7 +18,7 @@ public interface TodoMapper {
             @Param("endDate") String endDate
     );
 
-    // 1. todo 테이블에 기본 일정 정보 저장
+    // 1. todo 테이블에 기본 할 일 정보 저장
     int insertTodo(TodoRequestDto todoRequestDto);
 
     // 2. 생성된 todoId와 선택된 식물 ID 한 쌍을 매핑 테이블에 저장

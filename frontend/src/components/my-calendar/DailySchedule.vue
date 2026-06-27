@@ -1,7 +1,7 @@
 <template>
   <div class="daily-schedule">
     <div class="schedule-header">
-      <h3>{{ formattedDate }} 일정</h3>
+      <h3>{{ formattedDate }} 할 일</h3>
 
       <div class="dropdown-container">
         <button class="btn-register" @click="toggleDropdown">등록</button>
@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <p v-if="events.length === 0" class="no-events">{{ formattedDate }}에는 일정이 없습니다.</p>
+    <p v-if="events.length === 0" class="no-events">{{ formattedDate }}에는 할 일이 없습니다.</p>
 
     <ul v-else>
       <li v-for="event in events" :key="event.id" class="schedule-item">

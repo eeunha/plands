@@ -34,18 +34,18 @@ public class CalendarController {
         return ResponseEntity.ok(todoList);
     }
 
-    // 새 일정 등록 API
+    // 새 할 일 등록 API
     @PostMapping("/todo")
     public ResponseEntity<String> createTodo(@RequestBody TodoRequestDto todoRequestDto) { // RequestBody는 http body 내의 json 속 데이터를 dto에 매핑
 
-        System.out.println("====== 일정 등록 컨트롤러 진입 ======");
+        System.out.println("====== 할 일 등록 컨트롤러 진입 ======");
         System.out.println("프론트에서 넘어온 데이터: " + todoRequestDto.toString());
 
         // 💡 @RequestBody가 프론트에서 쏜 JSON 데이터를 자바 DTO 객체(참조변수 주소값)로 찰떡같이 변환해줘!
         todoService.createTodo(todoRequestDto);
 
         // 💡 성공적으로 등록되면 200 OK 사인과 함께 완료 메시지 전송!
-        return ResponseEntity.ok("일정이 성공적으로 등록되었습니다.");
+        return ResponseEntity.ok("할 일이 성공적으로 등록되었습니다.");
     }
 
     // 할 일 종류 목록 전체 조회 API

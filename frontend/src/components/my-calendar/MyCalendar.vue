@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-container">
-    <div v-if="loading" class="loading-text">일정 불러오는 중...</div>
+    <div v-if="loading" class="loading-text">할 일 불러오는 중...</div>
     <FullCalendar ref="fullCalendarRef" :options="calendarOptions" />
   </div>
 </template>

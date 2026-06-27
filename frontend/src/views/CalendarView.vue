@@ -69,7 +69,7 @@ onMounted(() => {
 
 <template>
   <div class="calendar-view-container">
-    <h2>나의 일정</h2>
+    <h2>나의 할 일</h2>
     <div class="content-wrapper">
       <div class="calendar-section">
         <MyCalendar

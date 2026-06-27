@@ -7,7 +7,7 @@ import com.plands.backend.dto.response.TodoTypeResponseDto;
 import java.util.List;
 
 public interface TodoService {
-    // 일정 마스터 등록 및 식물 N개 매핑을 처리할 비즈니스 로직
+    // 할 일 마스터 등록 및 식물 N개 매핑을 처리할 비즈니스 로직
     void createTodo(TodoRequestDto todoRequestDto);
 
     // 할 일 종류 목록 전체 조회

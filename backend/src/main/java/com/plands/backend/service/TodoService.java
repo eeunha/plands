@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface TodoService {
     // 할 일 마스터 등록 및 식물 N개 매핑을 처리할 비즈니스 로직
-    void createTodo(TodoRequestDto todoRequestDto);
+    boolean createTodo(TodoRequestDto todoRequestDto);
 
     // 할 일 종류 목록 전체 조회
     List<TodoTypeResponseDto> getTodoTypeList();
@@ -17,8 +17,8 @@ public interface TodoService {
     List<MemberPlantResponseDto> getMemberPlantList(Long memberId);
 
     // 할 일 삭제 비즈니스 로직 (Soft Delete)
-    void deleteTodo(Long todoId);
+    boolean deleteTodo(Long todoId);
 
     // 할 일 수정
-    void updateTodo(Long todoId, TodoRequestDto todoRequestDto);
+    boolean updateTodo(Long todoId, TodoRequestDto todoRequestDto);
 }

@@ -42,10 +42,14 @@ public class CalendarController {
         System.out.println("프론트에서 넘어온 데이터: " + todoRequestDto.toString());
 
         // 💡 @RequestBody가 프론트에서 쏜 JSON 데이터를 자바 DTO 객체(참조변수 주소값)로 찰떡같이 변환해줘!
-        todoService.createTodo(todoRequestDto);
+        boolean isSuccess = todoService.createTodo(todoRequestDto);
 
-        // 💡 성공적으로 등록되면 200 OK 사인과 함께 완료 메시지 전송!
-        return ResponseEntity.ok("할 일이 성공적으로 등록되었습니다.");
+        if (isSuccess) {
+            // 💡 성공적으로 등록되면 200 OK 사인과 함께 완료 메시지 전송!
+            return ResponseEntity.ok("할 일이 성공적으로 등록되었습니다.");
+        } else {
+            return ResponseEntity.badRequest().body("수정 실패: 해당 데이터가 없습니다."); // 프론트에 400 에러
+        }
     }
 
     // 할 일 종류 목록 전체 조회 API
@@ -72,10 +76,14 @@ public class CalendarController {
         System.out.println("====== 할 일 삭제 컨트롤러 진입 ======");
         System.out.println("프론트에서 넘어온 삭제 대상 ID: " + todoId);
 
-        todoService.deleteTodo(todoId);
+        boolean isSuccess = todoService.deleteTodo(todoId);
 
-        // 💡 성공적으로 처리되면 200 OK 사인과 함께 완료 메시지 전송!
-        return ResponseEntity.ok("할 일이 성공적으로 삭제되었습니다.");
+        if (isSuccess) {
+            // 💡 성공적으로 처리되면 200 OK 사인과 함께 완료 메시지 전송!
+            return ResponseEntity.ok("할 일이 성공적으로 삭제되었습니다.");
+        } else {
+            return ResponseEntity.badRequest().body("삭제 실패: 해당 할 일이 존재하지 않습니다.");
+        }
     }
 
     // 할 일 수정 API
@@ -85,8 +93,12 @@ public class CalendarController {
         System.out.println("====== 할 일 수정 컨트롤러 진입 ======");
         System.out.println("수정할 할 일 ID: " + todoId);
 
-        todoService.updateTodo(todoId, todoRequestDto);
+        boolean isSuccess = todoService.updateTodo(todoId, todoRequestDto);
 
-        return ResponseEntity.ok("할 일이 성공적으로 수정되었습니다.");
+        if (isSuccess) {
+            return ResponseEntity.ok("할 일이 성공적으로 수정되었습니다.");
+        } else {
+            return ResponseEntity.badRequest().body("수정 실패: 해당 할 일이 존재하지 않습니다.");
+        }
     }
 }

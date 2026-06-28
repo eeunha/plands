@@ -88,6 +88,15 @@
             mp.member_plant_id ASC
     </select>
 
+    <update id="updateTodo" parameterType="com.plands.backend.dto.request.TodoRequestDto">
+        UPDATE todo
+        SET
+            todo_type_id = #{todoTypeId},
+            due_date = #{dueDate}
+        WHERE todo_id = #{todoId}
+        AND is_deleted = 0
+    </update>
+
     <update id="updateTodoIsDeleted">
         UPDATE todo
         SET is_deleted = 1
@@ -98,4 +107,5 @@
         DELETE FROM todo_member_plant
         WHERE todo_id = #{todoId}
     </delete>
+
 </mapper>

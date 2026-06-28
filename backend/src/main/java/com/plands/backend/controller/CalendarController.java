@@ -77,4 +77,16 @@ public class CalendarController {
         // 💡 성공적으로 처리되면 200 OK 사인과 함께 완료 메시지 전송!
         return ResponseEntity.ok("할 일이 성공적으로 삭제되었습니다.");
     }
+
+    // 할 일 수정 API
+    @PutMapping("/todo/{todoId}")
+    public ResponseEntity<String> updateTodo(@PathVariable Long todoId, @RequestBody TodoRequestDto todoRequestDto) {
+
+        System.out.println("====== 할 일 수정 컨트롤러 진입 ======");
+        System.out.println("수정할 할 일 ID: " + todoId);
+
+        todoService.updateTodo(todoId, todoRequestDto);
+
+        return ResponseEntity.ok("할 일이 성공적으로 수정되었습니다.");
+    }
 }

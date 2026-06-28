@@ -18,4 +18,7 @@ public interface TodoService {
 
     // 할 일 삭제 비즈니스 로직 (Soft Delete)
     void deleteTodo(Long todoId);
+
+    // 할 일 수정
+    void updateTodo(Long todoId, TodoRequestDto todoRequestDto);
 }

@@ -58,4 +58,26 @@ public class TodoServiceImpl implements TodoService {
 
         System.out.println("====== 할 일 삭제 및 매핑 데이터 정리 완료 ======");
     }
+
+    @Override
+    @Transactional // 💡 마스터 수정, 매핑 삭제 및 재등록이 한 세트이므로 트랜잭션 필수!
+    public void updateTodo(Long todoId,  TodoRequestDto todoRequestDto) {
+        System.out.println("====== 할 일 수정 서비스 레이어 진입 ======");
+
+        // 1. 마스터 테이블(todo) 데이터 수정
+        // 쿼리에서 사용 가능하게 todoId 강제로 DTO에 넣어주기
+        todoRequestDto.setTodoId(todoId);
+        todoMapper.updateTodo(todoRequestDto);
+
+        // 2. 매핑 테이블(todo_member_plant)에서 기존에 맵핑되어 있던 식물들 삭제
+        todoMapper.deleteTodoMemberPlant(todoId);
+
+        // 3. 수정창에서 새로 선택되어서 넘어온 식물 ID 리스트가 있다면 다시 인서트(재매핑)
+        if (todoRequestDto.getMemberPlantIds() != null && !todoRequestDto.getMemberPlantIds().isEmpty()) {
+            for (Long memberPlantId : todoRequestDto.getMemberPlantIds()) {
+                todoMapper.insertTodoMemberPlant(todoId, memberPlantId);
+            }
+        }
+        System.out.println("====== 할 일 수정 및 식물 재매핑 완료 ======");
+    }
 }

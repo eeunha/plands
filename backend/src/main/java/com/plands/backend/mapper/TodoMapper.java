@@ -35,4 +35,7 @@ public interface TodoMapper {
 
     // 할 일 매핑 데이터 완전 삭제 (Hard Delete)
     int deleteTodoMemberPlant(Long todoId);
+
+    // 할 일 마스터 데이터 수정 쿼리 호출용
+    int updateTodo(TodoRequestDto todoRequestDto);
 }

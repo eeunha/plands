@@ -197,9 +197,6 @@ onMounted(async () => {
         <button
           class="modal-button primary"
           @click="saveTodo"
-          :disabled="
-            !todoForm.dueDate || !todoForm.todoTypeId || todoForm.memberPlantIds.length === 0
-          "
         >
           {{ isEditMode ? '수정완료' : '등록' }}
         </button>

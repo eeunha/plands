@@ -29,4 +29,10 @@ public interface TodoMapper {
 
     // 특정 회원의 식물 목록 조회
     List<MemberPlantResponseDto> selectMemberPlants(Long memberId); // 매개변수가 하나라 @Param 안써도 됨. 2개이상 시 필수
+
+    // 할 일 마스터 상태 논리 삭제 (is_deleted = 1로 변경)
+    int updateTodoIsDeleted(Long todoId);
+
+    // 할 일 매핑 데이터 완전 삭제 (Hard Delete)
+    int deleteTodoMemberPlant(Long todoId);
 }

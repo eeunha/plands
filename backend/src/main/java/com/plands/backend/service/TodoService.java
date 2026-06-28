@@ -15,4 +15,7 @@ public interface TodoService {
 
     // 특정 회원의 식물 목록 조회
     List<MemberPlantResponseDto> getMemberPlantList(Long memberId);
+
+    // 할 일 삭제 비즈니스 로직 (Soft Delete)
+    void deleteTodo(Long todoId);
 }

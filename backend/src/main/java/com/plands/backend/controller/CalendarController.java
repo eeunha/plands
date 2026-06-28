@@ -65,4 +65,16 @@ public class CalendarController {
         List<MemberPlantResponseDto> list = todoService.getMemberPlantList(memberId);
         return ResponseEntity.ok(list);
     }
+
+    // 할 일 삭제 API (Soft Delete)
+    @DeleteMapping("/todo/{todoId}")
+    public ResponseEntity<String> deleteTodo(@PathVariable Long todoId) {
+        System.out.println("====== 할 일 삭제 컨트롤러 진입 ======");
+        System.out.println("프론트에서 넘어온 삭제 대상 ID: " + todoId);
+
+        todoService.deleteTodo(todoId);
+
+        // 💡 성공적으로 처리되면 200 OK 사인과 함께 완료 메시지 전송!
+        return ResponseEntity.ok("할 일이 성공적으로 삭제되었습니다.");
+    }
 }

@@ -10,5 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PlantInfoDto {
+    private Long memberPlantId;
     private String plantName; // 화면에 보여줄 식물 이름
 }

@@ -11,6 +11,7 @@
         <result property="todoTypeId" column="todo_type_id"/>
 
         <collection property="plants" ofType="com.plands.backend.dto.response.PlantInfoDto">
+            <result property="memberPlantId" column="member_plant_id"/>
             <result property="plantName" column="plant_name"/>
         </collection>
     </resultMap>

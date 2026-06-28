@@ -40,11 +40,29 @@ export function useCalendarApi() {
     }
   }
 
+  // 할 일 삭제 함수 (DELETE) - soft delete도 delete. 행위의 목적!
+  const deleteTodo = async (todoId) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.delete(`/api/calendar/todo/${todoId}`)
+      console.log('할 일 삭제 성공:', res.data)
+      return true
+    } catch (err) {
+      error.value = err
+      console.error('할 일 삭제 실패:', err)
+      return false;
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     allEvents,
     loading,
     error,
     fetchCalendarList,
     createTodo,
+    deleteTodo,
   }
 }

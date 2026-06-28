@@ -6,7 +6,7 @@ import TodoRegisterModal from '@/components/modal/TodoRegisterModal.vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
 
 // 컴포저블 함수에서 상태(allEvents)와 API 호출 함수(fetchCalendarList) 가져오기
-const { allEvents, fetchCalendarList } = useCalendarApi()
+const { allEvents, fetchCalendarList, deleteTodo } = useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
@@ -57,11 +57,36 @@ const handleTodoSaved = async (savedDateStr) => {
     selectedDate.value = new Date(savedDateStr)
   }
 
+  await refreshCalendarList()
+  // if (currentPeriod.value.startDate && currentPeriod.value.endDate) {
+  //   await fetchCalendarList({
+  //     startDate: currentPeriod.value.startDate,
+  //     endDate: currentPeriod.value.endDate,
+  //   })
+  // }
+}
+
+// 삭제 신호를 받아서 처리하는 핸들러 함수 추가
+const handleTodoDelete = async (todoId) => {
+  console.log('CalendarViewL 할 일 삭제 처리 시작 -> id:', todoId)
+
+  // 컴포저블의 deleteTodo API 호출
+  const isSuccess = await deleteTodo(todoId)
+
+  if (isSuccess) {
+    alert('할 일이 성공적으로 삭제되었습니다. 🌿')
+
+    // 삭제 성공했으니 현재 보고 있는 한 달치 달력 화면 바로 새로고침!
+    await refreshCalendarList()
+  } else {
+    alert('할 일 삭제에 실패했습니다.')
+  }
+}
+
+// 💡 등록/삭제 후 달력 목록을 새로고침하는 공통 로직 분리
+const refreshCalendarList = async () => {
   if (currentPeriod.value.startDate && currentPeriod.value.endDate) {
-    await fetchCalendarList({
-      startDate: currentPeriod.value.startDate,
-      endDate: currentPeriod.value.endDate,
-    })
+    await fetchCalendarList({ startDate: currentPeriod.value.startDate })
   }
 }
 
@@ -90,6 +115,7 @@ onMounted(() => {
           :selected-date="selectedDate"
           :events="filteredEvents"
           @open-register="isRegisterModalOpen = true"
+          @delete-todo="handleTodoDelete"
         />
       </div>
     </div>

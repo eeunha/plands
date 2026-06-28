@@ -17,9 +17,15 @@
 
     <ul v-else>
       <li v-for="event in events" :key="event.id" class="schedule-item">
-        <div class="item-header">
-          <span class="color-badge" :style="{ backgroundColor: event.color }"></span>
-          <strong class="event-title">{{ event.title }}</strong>
+        <div class="item-main-wrapper">
+          <div class="item-header">
+            <span class="color-badge" :style="{ backgroundColor: event.color }"></span>
+            <strong class="event-title">{{ event.title }}</strong>
+          </div>
+
+          <button class="btn-delete" @click="clickDeletedTodo(event.id)" title="할 일 삭제">
+            🗑️
+          </button>
         </div>
 
         <div v-if="event.plants && event.plants.length > 0" class="plant-list">
@@ -49,7 +55,7 @@ const props = defineProps({
 })
 
 // 💡 부모에게 신호를 보내기 위한 emit 정의
-const emit = defineEmits(['open-register'])
+const emit = defineEmits(['open-register', 'delete-todo'])
 
 // 💡 드롭다운의 열림 상태를 관리하는 반응형 변수
 const isDropdownOpen = ref(false)
@@ -68,6 +74,14 @@ const clickRegisterTodo = () => {
   isDropdownOpen.value = false // 메뉴 닫아주고
   emit('open-register') // 부모(CalendarView)에게 "모달 열어라!" 하고 신호 발사 🚀
 }
+
+// 🌟 삭제 버튼을 클릭했을 때 작동하는 함수
+const clickDeletedTodo = (todoId) => {
+  if (confirm('이 할 일을 정말 삭제하시겠습니까?')) {
+    console.log('DailySchedule: 삭제할 할 일 ID 보냄 ->', todoId)
+    emit('delete-todo', todoId)
+  }
+}
 </script>
 
 <style scoped>
@@ -79,28 +93,25 @@ const clickRegisterTodo = () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* 💡 헤더 정렬용 스타일 추가 */
 .schedule-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
-  border-bottom: 2px solid #10b981; /* 파란색에서 은하 시그니처 에메랄드 컬러로 세련되게 변경! */
+  border-bottom: 2px solid #10b981;
   padding-bottom: 10px;
 }
 
 h3 {
   color: #333;
-  margin: 0; /* 정렬 어긋나지 않게 마진 제거 */
+  margin: 0;
 }
 
-/* 💡 드롭다운 컨테이너 관련 내비게이션 스타일 */
 .dropdown-container {
   position: relative;
   display: inline-block;
 }
 
-/* 와이어프레임 감성의 등록 버튼 (에메랄드 톤) */
 .btn-register {
   background-color: #10b981;
   color: white;
@@ -117,7 +128,6 @@ h3 {
   background-color: #059669;
 }
 
-/* 툭 떨어지는 메뉴 상자 */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -167,15 +177,48 @@ li {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
+/* 💡 타이틀과 쓰레기통을 양끝으로 밀어버리기 위한 가로 정렬용 */
+.item-main-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-header {
+  display: flex;
+  align-items: center;
+}
+
+/* 색상 칩 동그라미 스타일 예쁘게 잡기 */
+.color-badge {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
 li strong {
-  color: #10b981; /* 가독성을 위해 같이 매칭 */
+  color: #10b981;
   font-size: 1.1em;
 }
 
-li span {
-  color: #555;
-  font-size: 0.9em;
-  margin-left: 5px;
+/* 🌟 깔끔한 미니멀 쓰레기통 버튼 스타일 */
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2; /* 살짝 붉은 마우스오버 효과 */
+  transform: scale(1.1);
 }
 
 .no-events {
@@ -184,10 +227,10 @@ li span {
   margin-top: 20px;
 }
 
-/* 식물 뱃지 스타일 */
 .plant-list {
   margin-top: 8px;
 }
+
 .plant-badge {
   background-color: #ecfdf5;
   color: #065f46 !important;

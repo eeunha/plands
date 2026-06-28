@@ -86,7 +86,10 @@ const handleTodoDelete = async (todoId) => {
 // 💡 등록/삭제 후 달력 목록을 새로고침하는 공통 로직 분리
 const refreshCalendarList = async () => {
   if (currentPeriod.value.startDate && currentPeriod.value.endDate) {
-    await fetchCalendarList({ startDate: currentPeriod.value.startDate })
+    await fetchCalendarList({
+      startDate: currentPeriod.value.startDate,
+      endDate: currentPeriod.value.endDate
+    })
   }
 }
 

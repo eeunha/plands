@@ -6,11 +6,14 @@ import TodoRegisterModal from '@/components/modal/TodoRegisterModal.vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
 
 // 컴포저블 함수에서 상태(allEvents)와 API 호출 함수(fetchCalendarList) 가져오기
-const { allEvents, fetchCalendarList, deleteTodo } = useCalendarApi()
+const { allEvents, fetchCalendarList, deleteTodo, updateTodo } = useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
 const isRegisterModalOpen = ref(false) // 모달 열림 상태 관리
+
+const isEditModalOpen = ref(false) // 수정 모달 열림 상태 추가
+const selectedTodoData = ref(null) // 수정 팝업에 채워넣을 데이터 바구니
 
 // 달력 조회 시 썼던 날짜 범위를 기억해두기 위한 변수 (새로고침할 때 재사용!)
 const currentPeriod = ref({ startDate: '', endDate: '' })
@@ -58,12 +61,19 @@ const handleTodoSaved = async (savedDateStr) => {
   }
 
   await refreshCalendarList()
-  // if (currentPeriod.value.startDate && currentPeriod.value.endDate) {
-  //   await fetchCalendarList({
-  //     startDate: currentPeriod.value.startDate,
-  //     endDate: currentPeriod.value.endDate,
-  //   })
-  // }
+}
+
+// DailySchedule이 보낸 수정 신호를 처리하는 핸들러 함수
+const handleTodoEdit = (eventObj) => {
+  console.log('CalendarView: 수정 모달 오픈 준비 -> 데이터 백업', eventObj)
+  selectedTodoData.value = eventObj // 클릭한 할 일 정보를 바구니에 저장
+  isEditModalOpen.value = true // 수정 모달 열기!
+}
+
+// 💡 수정 완료 후 새로고침 핸들러
+const handleTodoUpdated = async () => {
+  isEditModalOpen.value = false
+  await refreshCalendarList() // 화면 리스트 갱신!
 }
 
 // 삭제 신호를 받아서 처리하는 핸들러 함수 추가
@@ -88,7 +98,7 @@ const refreshCalendarList = async () => {
   if (currentPeriod.value.startDate && currentPeriod.value.endDate) {
     await fetchCalendarList({
       startDate: currentPeriod.value.startDate,
-      endDate: currentPeriod.value.endDate
+      endDate: currentPeriod.value.endDate,
     })
   }
 }
@@ -119,6 +129,7 @@ onMounted(() => {
           :events="filteredEvents"
           @open-register="isRegisterModalOpen = true"
           @delete-todo="handleTodoDelete"
+          @edit-todo="handleTodoEdit"
         />
       </div>
     </div>
@@ -128,6 +139,15 @@ onMounted(() => {
       :initial-date="selectedDateString"
       @close="isRegisterModalOpen = false"
       @saved="handleTodoSaved"
+    />
+
+    <TodoRegisterModal
+      v-if="isEditModalOpen"
+      :is-edit-mode="true"
+      :todo-data="selectedTodoData"
+      :initial-date="selectedTodoData ? selectedTodoData.start : selectedDateString"
+      @close="isEditModalOpen = false"
+      @saved="handleTodoUpdated"
     />
   </div>
 </template>

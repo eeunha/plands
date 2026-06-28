@@ -57,6 +57,23 @@ export function useCalendarApi() {
     }
   }
 
+  // 할 일 수정 함수 (PUT) - 리소스가 무겁지 않고 백엔드 구현이 편하며 객체 통째로 던져주는 구조가 편해 PATCH 대신 PUT 사용
+  const updateTodo = async (todoId, todoData) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.put(`/api/calendar/todo/${todoId}`, todoData)
+      console.log('할 일 수정 성공:', res.data)
+      return true
+    } catch (err) {
+      error.value = err
+      console.log('할 일 수정 실패:', err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     allEvents,
     loading,
@@ -64,5 +81,6 @@ export function useCalendarApi() {
     fetchCalendarList,
     createTodo,
     deleteTodo,
+    updateTodo,
   }
 }

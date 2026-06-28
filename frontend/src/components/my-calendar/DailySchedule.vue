@@ -23,9 +23,12 @@
             <strong class="event-title">{{ event.title }}</strong>
           </div>
 
-          <button class="btn-delete" @click="clickDeletedTodo(event.id)" title="할 일 삭제">
-            🗑️
-          </button>
+          <div class="button-group">
+            <button class="btn-edit" @click="clickEditTodo(event)" title="할 일 수정">✏️</button>
+            <button class="btn-delete" @click="clickDeletedTodo(event.id)" title="할 일 삭제">
+              🗑️
+            </button>
+          </div>
         </div>
 
         <div v-if="event.plants && event.plants.length > 0" class="plant-list">
@@ -55,7 +58,7 @@ const props = defineProps({
 })
 
 // 💡 부모에게 신호를 보내기 위한 emit 정의
-const emit = defineEmits(['open-register', 'delete-todo'])
+const emit = defineEmits(['open-register', 'delete-todo', 'edit-todo'])
 
 // 💡 드롭다운의 열림 상태를 관리하는 반응형 변수
 const isDropdownOpen = ref(false)
@@ -73,6 +76,12 @@ const toggleDropdown = () => {
 const clickRegisterTodo = () => {
   isDropdownOpen.value = false // 메뉴 닫아주고
   emit('open-register') // 부모(CalendarView)에게 "모달 열어라!" 하고 신호 발사 🚀
+}
+
+// 수정 버튼 클릭 시 작동 함수
+const clickEditTodo = (eventObj) => {
+  console.log('DailySchedule: 수정할 할 일 데이터 보냄 ->', eventObj)
+  emit('edit-todo', eventObj)
 }
 
 // 🌟 삭제 버튼을 클릭했을 때 작동하는 함수
@@ -201,6 +210,29 @@ li {
 li strong {
   color: #10b981;
   font-size: 1.1em;
+}
+
+/* style scoped 맨 아래에 예쁜 초록색 마우스오버 효과 추가 */
+.button-group {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.btn-edit:hover {
+  background-color: #e6f4ea; /* 에메랄드 한 스푼 얹은 마우스오버 */
+  transform: scale(1.1);
 }
 
 /* 🌟 깔끔한 미니멀 쓰레기통 버튼 스타일 */

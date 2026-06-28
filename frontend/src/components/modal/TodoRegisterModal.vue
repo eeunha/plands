@@ -11,13 +11,20 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isEditMode: {
+    type: Boolean,
+    default: false,
+  },
+  todoData: {
+    type: Object,
+    default: null,
+  },
 })
 
-const authStore = useAuthStore()
 const emit = defineEmits(['saved', 'close'])
 
-// 1. 우리가 고친 캘린더 API 컴포저블에서 등록 함수 꺼내기
-const { createTodo } = useCalendarApi()
+const authStore = useAuthStore()
+const { createTodo, updateTodo } = useCalendarApi()
 
 // 💡 드롭다운들에 뿌려줄 목록 데이터들을 담을 변수
 const todoTypes = ref([])
@@ -35,20 +42,6 @@ const todoForm = reactive({
   memberPlantIds: [],
 })
 
-// 3. 모달이 열릴 때 드롭다운에 뿌릴 식물 목록과 할 일 종류를 서버에서 받아옴
-onMounted(async () => {
-  try {
-    const [typeRes, plantRes] = await Promise.all([
-      api.get('/api/calendar/todo-types'),
-      api.get(`/api/calendar/member-plants?memberId=${authStore.memberId}`),
-    ])
-    todoTypes.value = typeRes.data
-    memberPlants.value = plantRes.data
-  } catch (err) {
-    console.error('드롭다운 목록 로드 실패:', err)
-  }
-})
-
 // 할 일 종류를 클릭했을 때 실행할 함수
 const selectTodoType = (type) => {
   todoForm.todoTypeId = type.todoTypeId
@@ -62,7 +55,7 @@ const toggleTypeDropdown = () => {
   isTypeDropdownOpen.value = !isTypeDropdownOpen.value
 }
 
-// 4. 할 일 저장 함수 (동기분의 upload 함수 자리에 들어가는 핵심 로직!)
+// 4. 할 일 저장 함수 (등록과 수정을 여기서 분기 처리해버림!)
 const saveTodo = async () => {
   // 간단한 유효성 검사
   if (!todoForm.dueDate) {
@@ -86,22 +79,67 @@ const saveTodo = async () => {
     memberPlantIds: todoForm.memberPlantIds.map(Number),
   }
 
-  // 컴포저블의 post API 호출
-  const isSuccess = await createTodo(todoData)
+  let isSuccess = false
+
+  // ✏️ 모드에 따라 전송할 Axios API 함수를 스위칭한다!
+  if (props.isEditMode) {
+    const todoId = props.todoData.id
+    isSuccess = await updateTodo(todoId, todoData)
+  } else {
+    isSuccess = await createTodo(todoData)
+  }
 
   if (isSuccess) {
-    alert('할 일이 성공적으로 등록되었습니다. 🌱')
+    alert(
+      props.isEditMode
+        ? '할 일이 성공적으로 수정되었습니다. 🌱'
+        : '할 일이 성공적으로 등록되었습니다. 🌱',
+    )
     emit('saved', todoForm.dueDate)
     emit('close')
   } else {
-    alert('할 일 등록에 실패했습니다.')
+    alert(props.isEditMode ? '할 일 수정에 실패했습니다.' : '할 일 등록에 실패했습니다.')
   }
 }
+
+// 3. 모달이 열릴 때 드롭다운에 뿌릴 식물 목록과 할 일 종류를 서버에서 받아옴
+// 만약 '수정 모드'라면 기존 데이터를 폼에 바인딩!
+onMounted(async () => {
+  try {
+    const [typeRes, plantRes] = await Promise.all([
+      api.get('/api/calendar/todo-types'),
+      api.get(`/api/calendar/member-plants?memberId=${authStore.memberId}`),
+    ])
+    todoTypes.value = typeRes.data
+    memberPlants.value = plantRes.data
+
+    // 수정 모드 분기. 부모가 준 데이터 있다면 폼에 넣기
+    if (props.isEditMode && props.todoData) {
+      console.log('부모가 넘겨준 전체 todoData:', props.todoData)
+      console.log('그 중 식물 리스트(plants) 구조:', props.todoData.plants)
+
+      // FullCalendar의 event.id = 백엔드 todoId
+      todoForm.todoTypeId = props.todoData.todoTypeId || props.todoData.extendedProps?.todoTypeId
+      todoForm.dueDate = props.todoData.start // 기존 수행 날짜 고정
+
+      // 기존에 매핑되어 있던 식물 ID 배열 세팅
+      if (props.todoData.plants) {
+        todoForm.memberPlantIds = props.todoData.plants.map((p) => p.memberPlantId)
+      }
+
+      // 텍스트와 컬러칩도 기존에 맞게 연동
+      selectedTypeName.value = props.todoData.title
+      selectedColorCode.value = props.todoData.color
+    }
+  } catch (err) {
+    console.error('드롭다운 목록 로드 실패:', err)
+  }
+})
 </script>
 <template>
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
-      <h3>새 할 일 등록</h3>
+      <h3>{{ isEditMode ? '할 일 수정하기 ✏️' : '새 할 일 등록' }}</h3>
 
       <!-- 날짜 선택 섹션 -->
       <div class="form-group">
@@ -163,7 +201,7 @@ const saveTodo = async () => {
             !todoForm.dueDate || !todoForm.todoTypeId || todoForm.memberPlantIds.length === 0
           "
         >
-          등록
+          {{ isEditMode ? '수정완료' : '등록' }}
         </button>
         <button class="modal-button" @click="$emit('close')">취소</button>
       </div>

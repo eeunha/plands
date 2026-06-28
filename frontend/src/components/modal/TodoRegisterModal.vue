@@ -91,7 +91,7 @@ const saveTodo = async () => {
 
   if (isSuccess) {
     alert('할 일이 성공적으로 등록되었습니다. 🌱')
-    emit('saved')
+    emit('saved', todoForm.dueDate)
     emit('close')
   } else {
     alert('할 일 등록에 실패했습니다.')

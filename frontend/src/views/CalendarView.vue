@@ -49,8 +49,14 @@ const handleEventsLoaded = async ({ startDate, endDate }) => {
 }
 
 // 💡 할 일 등록 완료 시 실행될 새로고침 함수
-const handleTodoSaved = async () => {
+const handleTodoSaved = async (savedDateStr) => {
   console.log('CalendarView: 할 일 등록 성공 신호 수신 -> 달력 리스트 갱신')
+
+  // 모달에서 바꾼 날짜가 넘어왔다면, 부모의 selectedDate도 그 날짜 객체로 전면 동기화!
+  if (savedDateStr) {
+    selectedDate.value = new Date(savedDateStr)
+  }
+
   if (currentPeriod.value.startDate && currentPeriod.value.endDate) {
     await fetchCalendarList({
       startDate: currentPeriod.value.startDate,

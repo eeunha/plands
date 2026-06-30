@@ -6,7 +6,7 @@ import TodoRegisterModal from '@/components/modal/TodoRegisterModal.vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
 
 // 컴포저블 함수에서 상태(allEvents)와 API 호출 함수(fetchCalendarList) 가져오기
-const { allEvents, fetchCalendarList, deleteTodo, updateTodo } = useCalendarApi()
+const { allEvents, fetchCalendarList, deleteTodo } = useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())

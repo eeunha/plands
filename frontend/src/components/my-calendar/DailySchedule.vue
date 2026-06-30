@@ -100,6 +100,13 @@ const clickDeletedTodo = (todoId) => {
   border-radius: 8px;
   background-color: #f9f9f9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  min-height: 512px;
+  overflow-y: auto;
+
+  /* 자식 요소들을 세로로 나열하는 flex box로 변환 */
+  display: flex;
+  flex-direction: column;
 }
 
 .schedule-header {
@@ -256,7 +263,15 @@ li strong {
 .no-events {
   color: #888;
   text-align: center;
-  margin-top: 20px;
+
+  /* 마진 탑을 없애고, flex 안에서 남은 세로 공간을 100% 꽉 채우게 만듦 */
+  margin: 0;
+  flex-grow: 1;
+
+  /* 텍스트 자체를 세로/가로 정중앙으로 완벽하게 밀어 넣는 마법의 3줄 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .plant-list {

@@ -43,9 +43,12 @@ const calendarOptions = reactive({
   // 달력 높이를 내부 콘텐츠에 맞게 자동 조절 ➡️ 내부 스크롤바 원천 차단!
   height: 'auto',
 
-  // 달력의 주(Week) 개수를 6줄로 고정하지 않음!
   // 5줄만 필요한 달은 5줄만, 6줄이 필요한 달은 6줄로 상황에 맞게 가변 처리됨
   fixedWeekCount: false,
+
+  // 하루에 보여줄 최대 이벤트(할 일) 개수 제한!
+  // 딱 3개까지만 화면에 노출하고, 초과되면 아래에 자동으로 "+N개 더" 표시를 띄워줌
+  dayMaxEvents: 3,
 
   // 달력 화면에 그려질 실시간 스티커 리스트
   events: [],
@@ -213,5 +216,10 @@ watch(
 /* 오늘 날짜 기본 테두리나 배경 튜닝 */
 :deep(.fc-day-today) {
   background-color: #f8fafc !important;
+}
+
+/* 달력의 각 날짜 칸이 일정이 없어도 최소 이만큼의 높이를 유지하도록 설정 */
+:deep(.fc-daygrid-day-frame) {
+  min-height: 85px; /* 이 수치를 90px ~ 100px 사이로 조절하면서 은하 마음에 드는 높이를 찾아봐! */
 }
 </style>

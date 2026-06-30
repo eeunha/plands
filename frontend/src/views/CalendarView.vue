@@ -75,7 +75,7 @@ const handleTodoSaved = async (savedDateStr) => {
       return
     }
   }
-  
+
   // 3. 만약 같은 달(6월) 안에서 등록한 거라면 화면 이동이 없으니 기존처럼 데이터만 새로고침!
   console.log('CalendarView: 같은 달 안에서 등록이므로 데이터만 새로고침합니다.')
   await refreshCalendarList()
@@ -131,7 +131,6 @@ onMounted(() => {
 
 <template>
   <div class="calendar-view-container">
-    <h2>나의 할 일</h2>
     <div class="content-wrapper">
       <div class="calendar-section">
         <MyCalendar
@@ -175,12 +174,6 @@ onMounted(() => {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #2c3e50;
 }
 
 .content-wrapper {

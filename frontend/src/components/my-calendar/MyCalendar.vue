@@ -148,16 +148,33 @@ watch(
   { deep: true },
 )
 
-// [★ 대박 중요] 2. 부모가 넘겨준 선택 날짜가 바뀔 때마다 달력 눈금 강제 새로고침(리렌더링)하기!
+// 2. 부모가 넘겨준 선택 날짜가 바뀔 때마다 달력 눈금 강제 새로고침(리렌더링)하기!
 watch(
   () => props.selectedDate,
-  () => {
+  (newDate) => {
     if (fullCalendarRef.value) {
       const calendarApi = fullCalendarRef.value.getApi()
       // FullCalendar 자체 기능을 다시 호출해서 dayCellClassNames를 강제로 재구동시킴!
-      calendarApi.render()
+
+      // 1) FullCalendar가 인지하는 '진짜 현재 월의 1일' 정보 가져오기
+      const currentStart = calendarApi.view.currentStart
+
+      // 2) [핵심] 만약 부모가 바꾼 날짜의 '연도'나 '월'이 지금 달력 화면과 다르다면?
+      if (
+        newDate.getFullYear() !== currentStart.getFullYear() ||
+        newDate.getMonth() !== currentStart.getMonth()
+      ) {
+        console.log('MyCalendar: 다른 달로 날짜 점프 감지! 달력 화면을 이동합니다 ->', newDate)
+
+        // FullCalendar 화면 자체를 해당 날짜의 월로 강제 이동! (리모컨 작동)
+        calendarApi.gotoDate(newDate)
+      } else {
+        // 3) 같은 달 안에서 날짜만 바뀐 거라면 화면 이동 없이 테두리/배경 눈금만 새로고침!
+        calendarApi.render()
+      }
     }
   },
+  { immediate: true }, // 컴포넌트가 처음 켜질 때도 안전하게 한 번 실행되도록 설정
 )
 </script>
 

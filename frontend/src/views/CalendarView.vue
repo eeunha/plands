@@ -55,11 +55,29 @@ const handleEventsLoaded = async ({ startDate, endDate }) => {
 const handleTodoSaved = async (savedDateStr) => {
   console.log('CalendarView: 할 일 등록 성공 신호 수신 -> 달력 리스트 갱신')
 
-  // 모달에서 바꾼 날짜가 넘어왔다면, 부모의 selectedDate도 그 날짜 객체로 전면 동기화!
+  // 💡 할 일 등록 완료 시 실행될 새로고침 함수
   if (savedDateStr) {
-    selectedDate.value = new Date(savedDateStr)
-  }
+    const newDateObj = new Date(savedDateStr)
 
+    // [체크] 등록된 날짜가 현재 보고 있는 달력의 월과 같은지 비교
+    const isSameMonth =
+      selectedDate.value.getFullYear() === newDateObj.getFullYear() &&
+      selectedDate.value.getMonth() === newDateObj.getMonth()
+
+    // 1. 일단 선택된 하루(레이저 포인터)를 등록된 새 날짜로 변경!
+    selectedDate.value = newDateObj
+
+    // 2. 만약 다른 달(7월)로 등록한 거라면?
+    // 부모가 selectedDate를 바꾸는 순간 자식(MyCalendar)의 watch가 작동해
+    // 알아서 달력을 7월로 넘기고 백엔드를 찌를 테니, 부모는 여기서 아무것도 안 해도 됨!
+    if (!isSameMonth) {
+      console.log('CalendarView: 다른 달 등록이므로 자식 달력의 화면 이동 연쇄 반응을 기다립니다.')
+      return
+    }
+  }
+  
+  // 3. 만약 같은 달(6월) 안에서 등록한 거라면 화면 이동이 없으니 기존처럼 데이터만 새로고침!
+  console.log('CalendarView: 같은 달 안에서 등록이므로 데이터만 새로고침합니다.')
   await refreshCalendarList()
 }
 

@@ -40,13 +40,17 @@ const calendarOptions = reactive({
   weekends: true,
   locale: 'ko',
 
-  // [★ 추가] 달력 높이를 내부 콘텐츠에 맞게 자동 조절 ➡️ 내부 스크롤바 원천 차단!
+  // 달력 높이를 내부 콘텐츠에 맞게 자동 조절 ➡️ 내부 스크롤바 원천 차단!
   height: 'auto',
 
-  // 달력 화면에 그려질 실시간 스티커 리스트 (초기값은 빈 배열)
+  // 달력의 주(Week) 개수를 6줄로 고정하지 않음!
+  // 5줄만 필요한 달은 5줄만, 6줄이 필요한 달은 6줄로 상황에 맞게 가변 처리됨
+  fixedWeekCount: false,
+
+  // 달력 화면에 그려질 실시간 스티커 리스트
   events: [],
 
-  // [★ 2번 요구사항 해결] 상단 헤더 버튼 커스텀 (today 버튼 클릭 가로채기)
+  // 상단 헤더 버튼 커스텀 (today 버튼 클릭 가로채기)
   headerToolbar: {
     left: 'title',
     center: '',

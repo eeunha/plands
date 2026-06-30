@@ -146,6 +146,16 @@ const calendarOptions = reactive({
     emit('date-selected', info.dateStr)
     console.log('MyCalendar: 유저가 클릭한 날짜 ->', info.dateStr)
   },
+
+  // 할 일 스티커(이벤트)를 클릭했을 때도 똑같이 작동하게 만들기!
+  eventClick: (info) => {
+    // FullCalendar에서 스티커 클릭 시 제공하는 날짜 문자열 '2026-06-25' 추출
+    const clickedDateStr = info.event.startStr
+
+    // 똑같이 부모에 전달해서 오른쪽 탭을 동기화시킴! 🚀
+    emit('date-selected', clickedDateStr)
+    console.log('MyCalendar: 유저가 할 일 스티커를 클릭함 -> 날짜 동기화:', clickedDateStr)
+  },
 })
 
 // 부모가 백엔드에서 데이터를 새로 받아와서 props.events를 바꿔주면,

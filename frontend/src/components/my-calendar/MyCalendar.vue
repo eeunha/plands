@@ -40,6 +40,9 @@ const calendarOptions = reactive({
   weekends: true,
   locale: 'ko',
 
+  // [★ 추가] 달력 높이를 내부 콘텐츠에 맞게 자동 조절 ➡️ 내부 스크롤바 원천 차단!
+  height: 'auto',
+
   // 달력 화면에 그려질 실시간 스티커 리스트 (초기값은 빈 배열)
   events: [],
 
@@ -186,6 +189,8 @@ watch(
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  overflow: hidden; /* [★ 추가] 혹시라도 달력이 컨테이너를 삐져나가 스크롤바를 만드는 현상 방지 */
 }
 
 .loading-text {

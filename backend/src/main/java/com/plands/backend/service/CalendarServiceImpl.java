@@ -14,14 +14,11 @@ public class CalendarServiceImpl implements CalendarService {
     private final TodoMapper todoMapper;
 
     @Override
-    public List<CalendarResponseDto> getCalendarList(String startDate, String endDate) {
-        System.out.println("====== 캘린더 서비스 레이어 진짜 DB 호출 ======");
+    public List<CalendarResponseDto> getCalendarList(Long memberId, String startDate, String endDate) {
+        System.out.println("====== 캘린더 서비스 레이어 DB 호출 ======");
+        System.out.println("조회 유저 ID: " + memberId);
         System.out.println("조회 기간(한 달): " + startDate + " ~ " + endDate);
 
-        // 테스트용 계정 id 고정
-        Long mockMemberId = 1L;
-
-        // 가짜 데이터 mockList 로직은 싹 지우고, 진짜 한 달 치 쿼리 호출 결과를 리턴
-        return todoMapper.selectCalendarList(mockMemberId, startDate, endDate);
+        return todoMapper.selectCalendarList(memberId, startDate, endDate);
     }
 }

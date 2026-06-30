@@ -1,34 +1,56 @@
 package com.plands.backend.controller;
 
+import com.plands.backend.dto.MemberDto;
 import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.dto.response.MemberPlantResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 import com.plands.backend.service.CalendarService;
+import com.plands.backend.service.MemberService;
 import com.plands.backend.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/calendar")
 @RequiredArgsConstructor
 public class CalendarController {
 
+    private final MemberService memberService;
     private final CalendarService calendarService;
     private final TodoService todoService;
 
     // 프론트(FullCalendar)가 요청하는 기간(startDate, endDate)을 파라미터로 직접 바인딩함
     @GetMapping("/todo")
-    public ResponseEntity<List<CalendarResponseDto>> getTodoCalendarList(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
+    public ResponseEntity<List<CalendarResponseDto>> getTodoCalendarList(@AuthenticationPrincipal UserDetails userDetails, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
 
         System.out.println("====== 컨트롤러 진입 ======");
+
+        // 1. 토큰의 Subject에서 로그인한 유저의 이메일(혹은 소셜 식별 아이디) 추출
+        String email = userDetails.getUsername();
+        System.out.println("토큰에서 추출한 유저 이메일 -> " + email);
+
+        // 2. memberService를 통해 DB에서 해당 이메일을 가진 진짜 회원 정보(memberId) 찾아오기!
+        Optional<MemberDto> memberOpt = memberService.findByEmail(email);
+
+        if (memberOpt.isEmpty()) {
+            System.out.println("🚨 에러: 토큰 정보에 해당하는 회원이 DB에 없습니다!");
+            return ResponseEntity.badRequest().build();
+        }
+
+        // 3. 진짜 유저 고유 ID(PK) 꺼내기
+        Long memberId = memberOpt.get().getMemberId();
+        System.out.println("🔍 DB에서 조회된 진짜 회원 번호(memberId) -> " + memberId);
         System.out.println("요청 파라미터 -> startDate: " + startDate + ", endDate: " + endDate);
 
         // 서비스 레이어를 호출하여 한 달 치 데이터 가득 담긴 상자 더미 수령
-        List<CalendarResponseDto> todoList = calendarService.getCalendarList(startDate, endDate);
+        List<CalendarResponseDto> todoList = calendarService.getCalendarList(memberId, startDate, endDate);
 
         // 상태 코드 200(OK)과 함께 프론트엔드로 응답 전송
         return ResponseEntity.ok(todoList);

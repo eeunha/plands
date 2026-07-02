@@ -73,7 +73,6 @@ const saveTodo = async () => {
 
   // 백엔드 DTO 가방 구조와 1:1 매칭
   const todoData = {
-    memberId: authStore.memberId,
     todoTypeId: Number(todoForm.todoTypeId),
     dueDate: todoForm.dueDate,
     memberPlantIds: todoForm.memberPlantIds.map(Number),
@@ -108,7 +107,7 @@ onMounted(async () => {
   try {
     const [typeRes, plantRes] = await Promise.all([
       api.get('/api/calendar/todo-types'),
-      api.get(`/api/calendar/member-plants?memberId=${authStore.memberId}`),
+      api.get(`/api/calendar/member-plants`),
     ])
     todoTypes.value = typeRes.data
     memberPlants.value = plantRes.data

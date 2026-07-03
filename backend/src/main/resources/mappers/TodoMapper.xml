@@ -3,6 +3,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.plands.backend.mapper.TodoMapper">
 
+    <!-- ================================================================= -->
+    <!-- [ResultMap 정의] -->
+    <!-- ================================================================= -->
     <resultMap id="CalendarTodoMap" type="com.plands.backend.dto.response.CalendarResponseDto">
         <id property="id" column="todo_id"/>
         <result property="title" column="todo_type_name"/>
@@ -16,6 +19,36 @@
         </collection>
     </resultMap>
 
+    <!-- ================================================================= -->
+    <!-- [조회 - Read] -->
+    <!-- ================================================================= -->
+    <!-- 1. 투두 등록 폼용: 할 일 카테고리 타입 전체 조회 -->
+    <select id="selectTodoTypes" resultType="com.plands.backend.dto.response.TodoTypeResponseDto">
+        SELECT
+            todo_type_id AS todoTypeId,
+            name AS typeName,
+            color_code AS colorCode
+        FROM
+            todo_type
+        ORDER BY
+            todo_type_id ASC
+    </select>
+
+    <!-- 2. 투두 등록 폼용: 회원의 반려 식물 리스트 조회 -->
+    <select id="selectMemberPlants" resultType="com.plands.backend.dto.response.MemberPlantResponseDto">
+        SELECT
+            mp.member_plant_id AS memberPlantId,
+            p.name AS plantName
+        FROM member_plant mp
+                 JOIN plant p ON mp.plant_id = p.plant_id
+        WHERE mp.member_id = #{memberId}
+          AND mp.is_deleted = 0
+          AND p.is_deleted = 0
+        ORDER BY
+            mp.member_plant_id ASC
+    </select>
+
+    <!-- 3. 메인 캘린더용: 특정 기간의 투두 목록 전체 조회 (식물 매핑 포함) -->
     <select id="selectCalendarList" resultMap="CalendarTodoMap">
         SELECT
             t.todo_id,
@@ -31,16 +64,20 @@
                  LEFT JOIN todo_member_plant tmp
                            ON t.todo_id = tmp.todo_id
                  LEFT JOIN member_plant mp
-                           ON tmp.member_plant_id = mp.member_plant_id AND mp.is_deleted = FALSE
+                           ON tmp.member_plant_id = mp.member_plant_id AND mp.is_deleted = 0
                  LEFT JOIN plant p
-                           ON mp.plant_id = p.plant_id AND p.is_deleted = FALSE
+                           ON mp.plant_id = p.plant_id AND p.is_deleted = 0
         WHERE
             t.member_id = #{memberId}
-          AND t.is_deleted = FALSE
+          AND t.is_deleted = 0
           AND t.due_date BETWEEN #{startDate} AND #{endDate}
         ORDER BY t.due_date ASC, tt.todo_type_id ASC
     </select>
 
+    <!-- ================================================================= -->
+    <!-- [생성 - Create] -->
+    <!-- ================================================================= -->
+    <!-- 1. 투두 기본 정보 생성 (생성 후 PK값 반환) -->
     <insert id="insertTodo" parameterType="com.plands.backend.dto.request.TodoRequestDto">
         <selectKey keyProperty="todoId" resultType="long" order="AFTER">
             SELECT LAST_INSERT_ID()
@@ -56,6 +93,7 @@
         )
     </insert>
 
+    <!-- 2. 투두와 반려 식물 간의 다대다(N:M) 매핑 데이터 생성 -->
     <insert id="insertTodoMemberPlant">
         INSERT INTO todo_member_plant (
             todo_id,
@@ -66,29 +104,10 @@
         )
     </insert>
 
-    <select id="selectTodoTypes" resultType="com.plands.backend.dto.response.TodoTypeResponseDto">
-        SELECT
-            todo_type_id AS todoTypeId,
-            name AS typeName,
-            color_code AS colorCode
-        FROM
-            todo_type
-        ORDER BY
-            todo_type_id ASC
-    </select>
-
-    <select id="selectMemberPlants" resultType="com.plands.backend.dto.response.MemberPlantResponseDto">
-        SELECT
-            mp.member_plant_id AS memberPlantId,
-            p.name AS plantName
-        FROM member_plant mp
-        LEFT JOIN plant p ON mp.plant_id = p.plant_id
-        WHERE mp.member_id = #{memberId}
-            AND mp.is_deleted = 0
-        ORDER BY
-            mp.member_plant_id ASC
-    </select>
-
+    <!-- ================================================================= -->
+    <!-- [수정 - Update] -->
+    <!-- ================================================================= -->
+    <!-- 1. 투두 정보 수정 (날짜 및 카테고리 변경) -->
     <update id="updateTodo" parameterType="com.plands.backend.dto.request.TodoRequestDto">
         UPDATE todo
         SET
@@ -98,15 +117,21 @@
         AND is_deleted = 0
     </update>
 
-    <update id="updateTodoIsDeleted">
-        UPDATE todo
-        SET is_deleted = 1
-        WHERE todo_id = #{todoId}
-    </update>
-
+    <!-- ================================================================= -->
+    <!-- [삭제 - Delete] -->
+    <!-- ================================================================= -->
+    <!-- 1. 투두 수정/삭제 시 기존 식물 매핑 데이터 초기화 -->
     <delete id="deleteTodoMemberPlant">
         DELETE FROM todo_member_plant
         WHERE todo_id = #{todoId}
     </delete>
+
+    <!-- 2. 투두 삭제 (소프트 딜리트 - 안전장치 포함) -->
+    <update id="updateTodoIsDeleted">
+        UPDATE todo
+        SET is_deleted = 1
+        WHERE todo_id = #{todoId}
+          AND is_deleted = 0
+    </update>
 
 </mapper>

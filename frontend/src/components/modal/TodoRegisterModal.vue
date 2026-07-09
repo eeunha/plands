@@ -2,6 +2,7 @@
 import '@/assets/styles/modal.css'
 import { ref, reactive, onMounted } from 'vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
+import router from '@/router/index.js'
 
 // 💡 부모가 넘겨주는 날짜 prop 정의
 const props = defineProps({
@@ -99,6 +100,14 @@ const saveTodo = async () => {
   }
 }
 
+// 식물 등록 페이지로 이동하는 함수
+const goToPlantRegister = () => {
+  alert('식물 등록 기능(페이지)으로 이동하는 로직이 들어갈 자리입니다! 🌿')
+  // 나중에 vue-router 연동하면 아래 한 줄로 페이지 이동시키면 끝납니다.
+  // router.push('/plants/register')
+  emit('close')
+}
+
 // 모달 로드 시 초기 데이터 조회 및 수정 모드 데이터 바인딩
 onMounted(async () => {
   try {
@@ -177,7 +186,8 @@ onMounted(async () => {
       <!-- 식물 다중 선택 섹션 (체크박스 스타일) -->
       <div class="form-group">
         <label>대상 식물 (중복 선택 가능)</label>
-        <div class="plant-checkbox-list">
+
+        <div v-if="memberPlants.length > 0" class="plant-checkbox-list">
           <label
             v-for="plant in memberPlants"
             :key="plant.memberPlantId"
@@ -187,7 +197,14 @@ onMounted(async () => {
             {{ plant.plantName }}
           </label>
         </div>
-        <p v-if="memberPlants.length === 0" class="empty-text">등록된 식물이 없습니다.</p>
+
+        <div v-else class="empty-plant-warning">
+          <p class="warning-text">앗! 아직 등록된 식물이 없습니다. 😢</p>
+          <p class="warning-sub">할 일을 등록하려면 먼저 식물을 추가해야 해요.</p>
+          <button type="button" class="btn-go-register" @click="goToPlantRegister">
+            반려 식물 등록하러 가기 ➔
+          </button>
+        </div>
       </div>
 
       <div class="modal-buttons">
@@ -276,7 +293,6 @@ onMounted(async () => {
   background-color: #f3f4f6;
 }
 
-/* 🎨 은하가 원했던 완벽한 동그라미 컬러칩 CSS */
 .color-dot {
   width: 12px;
   height: 12px;
@@ -306,9 +322,40 @@ onMounted(async () => {
   cursor: pointer;
   font-weight: normal !important;
 }
-.empty-text {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
+/* 식물이 없을 때 보여줄 경고 박스 스타일 */
+.empty-plant-warning {
+  border: 1px dashed #10b981; /* 에메랄드 점선 */
+  background-color: #f0fdf4; /* 아주 연한 초록빛 배경 */
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.warning-text {
+  margin: 0 0 4px 0;
+  font-weight: bold;
+  color: #065f46;
+}
+
+.warning-sub {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #047857;
+}
+
+.btn-go-register {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-go-register:hover {
+  background-color: #059669;
 }
 </style>

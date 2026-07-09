@@ -128,6 +128,8 @@ onMounted(async () => {
     }
   } catch (err) {
     console.error('드롭다운 목록 로드 실패:', err)
+    alert('초기 데이터를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요. 😢')
+    emit('close') // 모달을 자동으로 닫아주기
   }
 })
 </script>

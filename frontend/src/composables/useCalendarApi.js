@@ -1,10 +1,20 @@
 import { ref } from 'vue'
 import api from '@/utils/api.js'
 
+const cachedTodoTypes = ref(null)
+const cachedMemberPlants = ref(null)
+
 export function useCalendarApi() {
   const allEvents = ref([])
   const loading = ref(false)
   const error = ref(null)
+
+  // 캐시 비우기
+  const clearCalendarCache = () => {
+    cachedTodoTypes.value = null
+    cachedMemberPlants.value = null
+    console.log('useCalendarApi: 캐시가 깔끔하게 비워졌습니다. 🧼')
+  }
 
   // 캘린더 전체 일정 조회 함수 (GET)
   const fetchCalendarList = async ({ startDate, endDate }) => {
@@ -26,9 +36,17 @@ export function useCalendarApi() {
 
   // 💡 모달 폼용: 할 일 카테고리 타입 리스트 조회 (GET)
   const getTodoTypes = async () => {
+    // 1. 이미 기억해둔 데이터가 있다면? 백엔드 안 찌르고 바로 반환!
+    if (cachedTodoTypes.value) {
+      console.log('useCalendarApi: 할 일 타입을 캐시에서 꺼내옵니다. 📦')
+      return cachedTodoTypes.value
+    }
+
+    // 2. 기억해둔 게 없으면 백엔드 찌르기
     error.value = null
     try {
       const res = await api.get('/api/calendar/todo-types')
+      cachedTodoTypes.value = res.data
       return res.data
     } catch (err) {
       error.value = err
@@ -39,9 +57,17 @@ export function useCalendarApi() {
 
   // 💡 모달 폼용: 회원의 반려 식물 리스트 조회 (GET)
   const getMemberPlants = async () => {
+    // 1. 이미 기억해둔 데이터가 있다면? 바로 반환!
+    if (cachedMemberPlants.value) {
+      console.log('useCalendarApi: 식물 목록을 캐시에서 꺼내옵니다. 🌿')
+      return cachedMemberPlants.value
+    }
+
+    // 2. 캐시된 정보 없을 때
     error.value = null
     try {
       const res = await api.get('/api/calendar/member-plants')
+      cachedMemberPlants.value = res.data
       return res.data
     } catch (err) {
       error.value = err
@@ -105,6 +131,7 @@ export function useCalendarApi() {
     allEvents,
     loading,
     error,
+    clearCalendarCache,
     fetchCalendarList,
     getTodoTypes,
     getMemberPlants,

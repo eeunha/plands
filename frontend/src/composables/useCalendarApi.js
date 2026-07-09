@@ -6,6 +6,7 @@ export function useCalendarApi() {
   const loading = ref(false)
   const error = ref(null)
 
+  // 캘린더 전체 일정 조회 함수 (GET)
   const fetchCalendarList = async ({ startDate, endDate }) => {
     loading.value = true
     error.value = null
@@ -23,6 +24,32 @@ export function useCalendarApi() {
     }
   }
 
+  // 💡 모달 폼용: 할 일 카테고리 타입 리스트 조회 (GET)
+  const getTodoTypes = async () => {
+    error.value = null
+    try {
+      const res = await api.get('/api/calendar/todo-types')
+      return res.data
+    } catch (err) {
+      error.value = err
+      console.error('할 일 카테고리 로드 실패:', err)
+      throw err // 오류가 발생하면 컴포넌트 catch문으로 던짐
+    }
+  }
+
+  // 💡 모달 폼용: 회원의 반려 식물 리스트 조회 (GET)
+  const getMemberPlants = async () => {
+    error.value = null
+    try {
+      const res = await api.get('/api/calendar/member-plants')
+      return res.data
+    } catch (err) {
+      error.value = err
+      console.error('회원 식물 목록 로드 실패:', err)
+      throw err
+    }
+  }
+
   // 새 할 일 등록 함수 (POST)
   const createTodo = async (todoData) => {
     loading.value = true
@@ -34,7 +61,7 @@ export function useCalendarApi() {
     } catch (err) {
       error.value = err
       console.error('할 일 등록 실패:', err)
-      return false;
+      return false
     } finally {
       loading.value = false
     }
@@ -51,7 +78,7 @@ export function useCalendarApi() {
     } catch (err) {
       error.value = err
       console.error('할 일 삭제 실패:', err)
-      return false;
+      return false
     } finally {
       loading.value = false
     }
@@ -79,6 +106,8 @@ export function useCalendarApi() {
     loading,
     error,
     fetchCalendarList,
+    getTodoTypes,
+    getMemberPlants,
     createTodo,
     deleteTodo,
     updateTodo,

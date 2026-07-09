@@ -1,46 +1,3 @@
-<template>
-  <div class="daily-schedule">
-    <div class="schedule-header">
-      <h3>{{ formattedDate }} 할 일</h3>
-
-      <div class="dropdown-container">
-        <button class="btn-register" @click="toggleDropdown">등록</button>
-
-        <div v-if="isDropdownOpen" class="dropdown-menu">
-          <button class="dropdown-item" @click="clickRegisterTodo">할 일</button>
-          <button class="dropdown-item" disabled>일기 (준비중)</button>
-        </div>
-      </div>
-    </div>
-
-    <p v-if="events.length === 0" class="no-events">{{ formattedDate }}에는 할 일이 없습니다.</p>
-
-    <ul v-else>
-      <li v-for="event in events" :key="event.id" class="schedule-item">
-        <div class="item-main-wrapper">
-          <div class="item-header">
-            <span class="color-badge" :style="{ backgroundColor: event.color }"></span>
-            <strong class="event-title">{{ event.title }}</strong>
-          </div>
-
-          <div class="button-group">
-            <button class="btn-edit" @click="clickEditTodo(event)" title="할 일 수정">✏️</button>
-            <button class="btn-delete" @click="clickDeletedTodo(event.id)" title="할 일 삭제">
-              🗑️
-            </button>
-          </div>
-        </div>
-
-        <div v-if="event.plants && event.plants.length > 0" class="plant-list">
-          <span v-for="(plant, index) in event.plants" :key="index" class="plant-badge">
-            🌿 {{ plant.plantName }}
-          </span>
-        </div>
-      </li>
-    </ul>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed } from 'vue'
 import { format } from 'date-fns'
@@ -92,6 +49,49 @@ const clickDeletedTodo = (todoId) => {
   }
 }
 </script>
+
+<template>
+  <div class="daily-schedule">
+    <div class="schedule-header">
+      <h3>{{ formattedDate }} 할 일</h3>
+
+      <div class="dropdown-container">
+        <button class="btn-register" @click="toggleDropdown">등록</button>
+
+        <div v-if="isDropdownOpen" class="dropdown-menu">
+          <button class="dropdown-item" @click="clickRegisterTodo">할 일</button>
+          <button class="dropdown-item" disabled>일기 (준비중)</button>
+        </div>
+      </div>
+    </div>
+
+    <p v-if="events.length === 0" class="no-events">{{ formattedDate }}에는 할 일이 없습니다.</p>
+
+    <ul v-else>
+      <li v-for="event in events" :key="event.id" class="schedule-item">
+        <div class="item-main-wrapper">
+          <div class="item-header">
+            <span class="color-badge" :style="{ backgroundColor: event.color }"></span>
+            <strong class="event-title">{{ event.title }}</strong>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-edit" @click="clickEditTodo(event)" title="할 일 수정">✏️</button>
+            <button class="btn-delete" @click="clickDeletedTodo(event.id)" title="할 일 삭제">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <div v-if="event.plants && event.plants.length > 0" class="plant-list">
+          <span v-for="(plant, index) in event.plants" :key="index" class="plant-badge">
+            🌿 {{ plant.plantName }}
+          </span>
+        </div>
+      </li>
+    </ul>
+  </div>
+</template>
 
 <style scoped>
 .daily-schedule {
@@ -214,7 +214,7 @@ li {
   margin-right: 8px;
 }
 
-li strong {
+.event-title {
   color: #10b981;
   font-size: 1.1em;
 }

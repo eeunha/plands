@@ -1,12 +1,5 @@
-<template>
-  <div class="calendar-container">
-    <div v-if="loading" class="loading-text">할 일 불러오는 중...</div>
-    <FullCalendar ref="fullCalendarRef" :options="calendarOptions" />
-  </div>
-</template>
-
 <script setup>
-import { reactive, watch, defineEmits, ref } from 'vue' // defineProps, watch 제거
+import { reactive, watch, defineEmits, ref } from 'vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -197,6 +190,13 @@ watch(
   { immediate: true }, // 컴포넌트가 처음 켜질 때도 안전하게 한 번 실행되도록 설정
 )
 </script>
+
+<template>
+  <div class="calendar-container">
+    <div v-if="loading" class="loading-text">할 일 불러오는 중...</div>
+    <FullCalendar ref="fullCalendarRef" :options="calendarOptions" />
+  </div>
+</template>
 
 <style scoped>
 .calendar-container {

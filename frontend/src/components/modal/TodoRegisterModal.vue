@@ -2,7 +2,6 @@
 import '@/assets/styles/modal.css'
 import { ref, reactive, onMounted } from 'vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
-import router from '@/router/index.js'
 
 // 💡 부모가 넘겨주는 날짜 prop 정의
 const props = defineProps({
@@ -103,8 +102,10 @@ const saveTodo = async () => {
 // 식물 등록 페이지로 이동하는 함수
 const goToPlantRegister = () => {
   alert('식물 등록 기능(페이지)으로 이동하는 로직이 들어갈 자리입니다! 🌿')
-  // 나중에 vue-router 연동하면 아래 한 줄로 페이지 이동시키면 끝납니다.
+  // 나중에 식물 등록 페이지 구현 후 아래처럼 연결하면 됩니다.
   // router.push('/plants/register')
+
+  alert('준비 중인 기능입니다. 현재는 식물 등록 페이지 구현을 위해 대기 중입니다! 🌿');
   emit('close')
 }
 

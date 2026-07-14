@@ -13,7 +13,6 @@ export function useCalendarApi() {
   const clearCalendarCache = () => {
     cachedTodoTypes.value = null
     cachedMemberPlants.value = null
-    console.log('useCalendarApi: 캐시가 깔끔하게 비워졌습니다. 🧼')
   }
 
   // 캘린더 전체 일정 조회 함수 (GET)
@@ -25,7 +24,6 @@ export function useCalendarApi() {
         params: { startDate, endDate },
       })
       allEvents.value = res.data
-      console.log(allEvents.value)
     } catch (err) {
       error.value = err
       console.error('달력 데이터 가져오기 실패:', err)
@@ -38,7 +36,6 @@ export function useCalendarApi() {
   const getTodoTypes = async () => {
     // 1. 이미 기억해둔 데이터가 있다면? 백엔드 안 찌르고 바로 반환!
     if (cachedTodoTypes.value) {
-      console.log('useCalendarApi: 할 일 타입을 캐시에서 꺼내옵니다. 📦')
       return cachedTodoTypes.value
     }
 
@@ -59,7 +56,6 @@ export function useCalendarApi() {
   const getMemberPlants = async () => {
     // 1. 이미 기억해둔 데이터가 있다면? 바로 반환!
     if (cachedMemberPlants.value) {
-      console.log('useCalendarApi: 식물 목록을 캐시에서 꺼내옵니다. 🌿')
       return cachedMemberPlants.value
     }
 
@@ -82,7 +78,6 @@ export function useCalendarApi() {
     error.value = null
     try {
       const res = await api.post('/api/calendar/todo', todoData)
-      console.log('할 일 등록 성공:', res.data)
       return true // 성공하면 컴포넌트(모달)단에 성공 시그널을 보냄!
     } catch (err) {
       error.value = err
@@ -99,7 +94,6 @@ export function useCalendarApi() {
     error.value = null
     try {
       const res = await api.delete(`/api/calendar/todo/${todoId}`)
-      console.log('할 일 삭제 성공:', res.data)
       return true
     } catch (err) {
       error.value = err
@@ -116,11 +110,10 @@ export function useCalendarApi() {
     error.value = null
     try {
       const res = await api.put(`/api/calendar/todo/${todoId}`, todoData)
-      console.log('할 일 수정 성공:', res.data)
       return true
     } catch (err) {
       error.value = err
-      console.log('할 일 수정 실패:', err)
+      console.error('할 일 수정 실패:', err)
       return false
     } finally {
       loading.value = false

@@ -37,14 +37,12 @@ const clickRegisterTodo = () => {
 
 // 수정 버튼 클릭 시 작동 함수
 const clickEditTodo = (eventObj) => {
-  console.log('DailySchedule: 수정할 할 일 데이터 보냄 ->', eventObj)
   emit('edit-todo', eventObj)
 }
 
 // 🌟 삭제 버튼을 클릭했을 때 작동하는 함수
 const clickDeletedTodo = (todoId) => {
   if (confirm('이 할 일을 정말 삭제하시겠습니까?')) {
-    console.log('DailySchedule: 삭제할 할 일 ID 보냄 ->', todoId)
     emit('delete-todo', todoId)
   }
 }

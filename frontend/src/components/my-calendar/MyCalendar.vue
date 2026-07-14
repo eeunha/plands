@@ -93,8 +93,6 @@ const calendarOptions = reactive({
     const startDate = info.startStr.split('T')[0]
     const endDate = info.endStr.split('T')[0]
 
-    console.log('MyCalendar: 현재 화면의 날짜 범위 감지 완료 ->', startDate, '~', endDate)
-
     // 부모(CalendarView)에게 "이 기간만큼 백엔드에서 데이터 조회해와!" 하고 신호 보냄
     emit('events-loaded', { startDate, endDate })
 
@@ -116,7 +114,6 @@ const calendarOptions = reactive({
         const offset = realToday.getTimezoneOffset() * 60000
         const todayStr = new Date(realToday.getTime() - offset).toISOString().split('T')[0]
 
-        console.log(`MyCalendar: 이번 달로 복귀 감지! 오늘 날짜(${todayStr})로 자동 선택합니다.`)
         emit('date-selected', todayStr)
       } else {
         // 이동한 달이 완전히 다른 달(5월, 7월 등)이라면? 은하 기획대로 '그 달의 1일'을 선택!
@@ -125,9 +122,6 @@ const calendarOptions = reactive({
           .toISOString()
           .split('T')[0]
 
-        console.log(
-          `MyCalendar: 다른 달로 이동 감지! 해당 월의 1일(${firstDayStr})로 자동 선택합니다.`,
-        )
         emit('date-selected', firstDayStr)
       }
     }
@@ -137,7 +131,6 @@ const calendarOptions = reactive({
   dateClick: (info) => {
     // 부모에게 클릭한 날짜 문자열(ex: '2026-06-25')을 쏴서 오른쪽 탭을 바꾸게 만듦
     emit('date-selected', info.dateStr)
-    console.log('MyCalendar: 유저가 클릭한 날짜 ->', info.dateStr)
   },
 
   // 할 일 스티커(이벤트)를 클릭했을 때도 똑같이 작동하게 만들기!
@@ -147,7 +140,6 @@ const calendarOptions = reactive({
 
     // 똑같이 부모에 전달해서 오른쪽 탭을 동기화시킴! 🚀
     emit('date-selected', clickedDateStr)
-    console.log('MyCalendar: 유저가 할 일 스티커를 클릭함 -> 날짜 동기화:', clickedDateStr)
   },
 })
 
@@ -177,8 +169,6 @@ watch(
         newDate.getFullYear() !== currentStart.getFullYear() ||
         newDate.getMonth() !== currentStart.getMonth()
       ) {
-        console.log('MyCalendar: 다른 달로 날짜 점프 감지! 달력 화면을 이동합니다 ->', newDate)
-
         // FullCalendar 화면 자체를 해당 날짜의 월로 강제 이동! (리모컨 작동)
         calendarApi.gotoDate(newDate)
       } else {

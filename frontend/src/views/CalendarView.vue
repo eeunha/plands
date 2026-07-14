@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import MyCalendar from '@/components/my-calendar/MyCalendar.vue'
 import DailySchedule from '@/components/my-calendar/DailySchedule.vue'
 import TodoRegisterModal from '@/components/modal/TodoRegisterModal.vue'
@@ -35,19 +35,16 @@ const filteredEvents = computed(() => {
 // 달력에서 날짜를 클릭했을 때 실행될 함수
 const handleDateSelected = (dateStr) => {
   selectedDate.value = new Date(dateStr)
-  console.log('CalendarView: 유저가 클릭한 날짜 ->', dateStr)
 }
 
 // 자식(MyCalendar) 달력이 켜지거나 월을 바꿨을 때, 기간을 받아와서 백엔드 찌르는 함수
 const handleEventsLoaded = async ({ startDate, endDate }) => {
-  console.log(`CalendarView: 달력이 감지한 기간으로 백엔드 조회 요청! [${startDate} ~ ${endDate}]`)
   currentPeriod.value = { startDate, endDate }
   await fetchCalendarList({ startDate, endDate })
 }
 
 // 💡 [통합 리팩토링] 등록 및 수정 완료 시 공통으로 실행되는 저장 핸들러!
 const handleTodoSaved = async (savedDateStr) => {
-  console.log('CalendarView: 할 일 저장(등록/수정) 성공 신호 수신 -> 화면 리스트 갱신 시작')
 
   // 수정 모달이 열려있었다면 닫아주기
   if (isEditModalOpen.value) isEditModalOpen.value = false
@@ -67,26 +64,22 @@ const handleTodoSaved = async (savedDateStr) => {
     // 부모가 selectedDate를 바꾸는 순간 자식(MyCalendar)의 watch가 작동해
     // 알아서 달력을 7월로 넘기고 백엔드를 찌를 테니, 부모는 여기서 아무것도 안 해도 됨!
     if (!isSameMonth) {
-      console.log('CalendarView: 다른 달 작업이므로 자식 달력의 화면 이동을 기다립니다.')
       return
     }
   }
 
   // 3. 만약 같은 달(6월) 안에서 등록한 거라면 화면 이동이 없으니 기존처럼 데이터만 새로고침!
-  console.log('CalendarView: 같은 달 안에서 등록이므로 데이터만 새로고침합니다.')
   await refreshCalendarList()
 }
 
 // DailySchedule이 보낸 수정 신호를 처리하는 핸들러 함수
 const handleTodoEdit = (eventObj) => {
-  console.log('CalendarView: 수정 모달 오픈 준비 -> 데이터 백업', eventObj)
   selectedTodoData.value = eventObj // 클릭한 할 일 정보를 바구니에 저장
   isEditModalOpen.value = true // 수정 모달 열기!
 }
 
 // 삭제 신호를 받아서 처리하는 핸들러 함수 추가
 const handleTodoDelete = async (todoId) => {
-  console.log('CalendarViewL 할 일 삭제 처리 시작 -> id:', todoId)
   const isSuccess = await deleteTodo(todoId)
 
   if (isSuccess) {
@@ -110,10 +103,6 @@ const refreshCalendarList = async () => {
 
 // 💡 모달창에 '2026-06-25' 형태로 날짜를 넘겨주기 위한 computed
 const selectedDateString = computed(() => formatDateStr(selectedDate.value))
-
-onMounted(() => {
-  console.log('CalendarView가 마운트되었습니다.')
-})
 </script>
 
 <template>

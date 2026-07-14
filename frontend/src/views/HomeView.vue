@@ -1,7 +1,7 @@
 <template>
   <div class="home-container">
     <div v-if="isLoggedIn">
-      <p>캘린더 component가 들어가야함...</p>
+      <CalendarView />
     </div>
     <div v-else>
       <Introduce />
@@ -10,25 +10,30 @@
 </template>
 
 <script>
-import Introduce from '@/components/Introduce.vue';
+import Introduce from '@/components/Introduce.vue'
 import { useAuthStore } from '@/stores/authStore.js'
+import CalendarView from '@/views/CalendarView.vue'
 export default {
-  name: "HomeView",
-  data() {
-    return {
-
+  name: 'HomeView',
+  created() {
+    const authStore = useAuthStore()
+    if (authStore.isLoggedIn) {
+      this.$router.replace('/calendar')
     }
+  },
+  data() {
+    return {}
   },
   computed: {
     isLoggedIn() {
-      const authStore = useAuthStore();
-      return authStore.isLoggedIn;
-    }
+      const authStore = useAuthStore()
+      return authStore.isLoggedIn
+    },
   },
   components: {
-    Introduce
+    CalendarView,
+    Introduce,
   },
-
 }
 </script>
 
@@ -38,5 +43,4 @@ export default {
   height: 100vh;
   overflow: hidden;
 }
-
 </style>

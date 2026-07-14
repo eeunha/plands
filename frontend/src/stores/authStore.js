@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useCalendarApi } from '@/composables/useCalendarApi.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(localStorage.getItem('accessToken') || null)
@@ -33,6 +34,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
+
+    const { clearCalendarCache } = useCalendarApi()
+
     accessToken.value = null
     refreshToken.value = null
     isLoggedIn.value = false
@@ -47,6 +51,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('profileImageUrl')
     localStorage.removeItem('nickname')
     localStorage.removeItem('role')
+
+    clearCalendarCache()
   }
 
   return {

@@ -15,12 +15,12 @@ export function useCalendarApi() {
     cachedMemberPlants.value = null
   }
 
-  // 캘린더 전체 일정 조회 함수 (GET)
+  // 캘린더 전체 할 일 조회 함수 (GET)
   const fetchCalendarList = async ({ startDate, endDate }) => {
     loading.value = true
     error.value = null
     try {
-      const res = await api.get('/api/calendar/todo', {
+      const res = await api.get('/api/todo', {
         params: { startDate, endDate },
       })
       allEvents.value = res.data
@@ -42,7 +42,7 @@ export function useCalendarApi() {
     // 2. 기억해둔 게 없으면 백엔드 찌르기
     error.value = null
     try {
-      const res = await api.get('/api/calendar/todo-types')
+      const res = await api.get('/api/todo/type')
       cachedTodoTypes.value = res.data
       return res.data
     } catch (err) {
@@ -62,7 +62,7 @@ export function useCalendarApi() {
     // 2. 캐시된 정보 없을 때
     error.value = null
     try {
-      const res = await api.get('/api/calendar/member-plants')
+      const res = await api.get('/api/calendar/member-plant')
       cachedMemberPlants.value = res.data
       return res.data
     } catch (err) {
@@ -77,7 +77,7 @@ export function useCalendarApi() {
     loading.value = true
     error.value = null
     try {
-      const res = await api.post('/api/calendar/todo', todoData)
+      const res = await api.post('/api/todo', todoData)
       return true // 성공하면 컴포넌트(모달)단에 성공 시그널을 보냄!
     } catch (err) {
       error.value = err
@@ -93,7 +93,7 @@ export function useCalendarApi() {
     loading.value = true
     error.value = null
     try {
-      const res = await api.delete(`/api/calendar/todo/${todoId}`)
+      const res = await api.delete(`/api/todo/${todoId}`)
       return true
     } catch (err) {
       error.value = err
@@ -109,7 +109,7 @@ export function useCalendarApi() {
     loading.value = true
     error.value = null
     try {
-      const res = await api.put(`/api/calendar/todo/${todoId}`, todoData)
+      const res = await api.put(`/api/todo/${todoId}`, todoData)
       return true
     } catch (err) {
       error.value = err

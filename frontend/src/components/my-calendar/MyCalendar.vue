@@ -218,7 +218,7 @@ watch(
   background-color: #f8fafc !important;
 }
 
-/* 달력의 각 날짜 칸이 일정이 없어도 최소 이만큼의 높이를 유지하도록 설정 */
+/* 달력의 각 날짜 칸이 할 일이 없어도 최소 이만큼의 높이를 유지하도록 설정 */
 :deep(.fc-daygrid-day-frame) {
   min-height: 85px; /* 이 수치를 90px ~ 100px 사이로 조절하면서 은하 마음에 드는 높이를 찾아봐! */
 }

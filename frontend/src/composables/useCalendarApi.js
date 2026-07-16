@@ -9,10 +9,11 @@ export function useCalendarApi() {
   const loading = ref(false)
   const error = ref(null)
 
-  // 캐시 비우기
-  const clearCalendarCache = () => {
+  // 캐시와 일정 목록 비우기
+  const resetCalendarState = () => {
     cachedTodoTypes.value = null
     cachedMemberPlants.value = null
+    allEvents.value = []
   }
 
   // 캘린더 전체 할 일 조회 함수 (GET)
@@ -124,7 +125,7 @@ export function useCalendarApi() {
     allEvents,
     loading,
     error,
-    clearCalendarCache,
+    resetCalendarState,
     fetchCalendarList,
     getTodoTypes,
     getMemberPlants,

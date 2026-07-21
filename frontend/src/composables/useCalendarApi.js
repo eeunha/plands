@@ -121,6 +121,35 @@ export function useCalendarApi() {
     }
   }
 
+  // --- 일기(Diary) 관련 API ---
+  // 새 한 줄 일기 등록 함수 (POST)
+  const createDiary = async (diaryData) => {
+    loading.value = true
+    error.value = null
+    try {
+      const formData = new FormData()
+      formData.append('content', diaryData.content)
+      formData.append('diaryDate', diaryData.diaryDate)
+
+      if (diaryData.image) {
+        formData.append('image', diaryData.image)
+      }
+
+      await api.post('/api/diary', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      })
+      return true
+    } catch (err) {
+      error.value = err
+      console.error('한 줄 일기 등록 실패:', err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     allEvents,
     loading,
@@ -132,5 +161,6 @@ export function useCalendarApi() {
     createTodo,
     deleteTodo,
     updateTodo,
+    createDiary,
   }
 }

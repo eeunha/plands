@@ -17,13 +17,16 @@ const selectedTodoData = ref(null) // 수정 팝업에 채워넣을 데이터 �
 // 달력 조회 시 썼던 날짜 범위를 기억해두기 위한 변수 (새로고침할 때 재사용!)
 const currentPeriod = ref({ startDate: '', endDate: '' })
 
-// Date 객체를 '2026-06-25' 형태의 문자열로 안전하게 바꾸는 헬퍼 함수
+// 우측 상단 탭 상태 ('todo' 또는 'diary')
+const activeTab = ref('todo')
+
+// Date 객체를 '2026-06-25' 형태의 문자열로 안전하게 변환
 const formatDateStr = (dateObj) => {
   const offset = dateObj.getTimezoneOffset() * 60000
   return new Date(dateObj.getTime() - offset).toISOString().split('T')[0]
 }
 
-// 백엔드에서 받은 한 달치(allEvents) 중, 선택된 날짜 하루치만 칼같이 필터링
+// 선택된 날짜 하루치의 일정만 필터링
 const filteredEvents = computed(() => {
   const selectedDateStr = formatDateStr(selectedDate.value)
   if (!allEvents.value) return []
@@ -32,20 +35,19 @@ const filteredEvents = computed(() => {
   return allEvents.value.filter((event) => event.start === selectedDateStr)
 })
 
-// 달력에서 날짜를 클릭했을 때 실행될 함수
+// 날짜를 선택했을 때
 const handleDateSelected = (dateStr) => {
   selectedDate.value = new Date(dateStr)
 }
 
-// 자식(MyCalendar) 달력이 켜지거나 월을 바꿨을 때, 기간을 받아와서 백엔드 찌르는 함수
+// 달력 월 변경 또는 최초 로드 시 기간별 데이터 조회
 const handleEventsLoaded = async ({ startDate, endDate }) => {
   currentPeriod.value = { startDate, endDate }
   await fetchCalendarList({ startDate, endDate })
 }
 
-// 💡 [통합 리팩토링] 등록 및 수정 완료 시 공통으로 실행되는 저장 핸들러!
+// 등록 및 수정 완료 시 공통 저장 핸들러
 const handleTodoSaved = async (savedDateStr) => {
-
   // 수정 모달이 열려있었다면 닫아주기
   if (isEditModalOpen.value) isEditModalOpen.value = false
 
@@ -72,13 +74,13 @@ const handleTodoSaved = async (savedDateStr) => {
   await refreshCalendarList()
 }
 
-// DailySchedule이 보낸 수정 신호를 처리하는 핸들러 함수
+// 수정 모달 오픈 핸들러
 const handleTodoEdit = (eventObj) => {
   selectedTodoData.value = eventObj // 클릭한 할 일 정보를 바구니에 저장
   isEditModalOpen.value = true // 수정 모달 열기!
 }
 
-// 삭제 신호를 받아서 처리하는 핸들러 함수 추가
+// 삭제 핸들러
 const handleTodoDelete = async (todoId) => {
   const isSuccess = await deleteTodo(todoId)
 
@@ -90,7 +92,7 @@ const handleTodoDelete = async (todoId) => {
   }
 }
 
-// 💡 등록/수정/삭제 후 달력 목록을 새로고침하는 공통 로직 분리
+// 새로고침 공통 로직
 const refreshCalendarList = async () => {
   const { startDate, endDate } = currentPeriod.value
 
@@ -108,6 +110,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
 <template>
   <div class="calendar-view-container">
     <div class="content-wrapper">
+      <!-- 왼쪽: 캘린더 영역 -->
       <div class="calendar-section">
         <MyCalendar
           :events="allEvents"
@@ -116,17 +119,41 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
           @events-loaded="handleEventsLoaded"
         />
       </div>
+
+      <!-- 오른쪽: 할 일 / 일기 전환 영역 -->
       <div class="schedule-section">
-        <DailySchedule
-          :selected-date="selectedDate"
-          :events="filteredEvents"
-          @open-register="isRegisterModalOpen = true"
-          @delete-todo="handleTodoDelete"
-          @edit-todo="handleTodoEdit"
-        />
+        <!-- 우측 상단 탭 헤더 -->
+        <div class="tab-header">
+          <button :class="{ active: activeTab === 'todo' }" @click="activeTab = 'todo'">
+            할 일
+          </button>
+          <button :class="{ active: activeTab === 'diary' }" @click="activeTab = 'diary'">
+            일기
+          </button>
+        </div>
+
+        <!-- 탭에 따른 컨텐츠 전환 영역 -->
+        <div class="tab-content">
+          <!-- '할 일' 탭 내용 -->
+          <DailySchedule
+            v-if="activeTab === 'todo'"
+            :selected-date="selectedDate"
+            :events="filteredEvents"
+            @open-register="isRegisterModalOpen = true"
+            @delete-todo="handleTodoDelete"
+            @edit-todo="handleTodoEdit"
+          />
+
+          <!-- '일기' 탭 내용 (나중에 Diary 컴포넌트로 분리 예정) -->
+          <div v-else class="diary-pane">
+            <p class="diary-date-title">{{ selectedDateString }}의 일기</p>
+            <!-- 여기에 일기 이미지와 내용이 들어갈 예정입니다. -->
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- 등록 모달 -->
     <TodoRegisterModal
       v-if="isRegisterModalOpen"
       :initial-date="selectedDateString"
@@ -134,6 +161,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
       @saved="handleTodoSaved"
     />
 
+    <!-- 수정 모달 -->
     <TodoRegisterModal
       v-if="isEditModalOpen"
       :is-edit-mode="true"
@@ -168,5 +196,47 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
   flex: 1;
   min-width: 300px;
   flex-grow: 1;
+}
+
+.tab-header {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 10px;
+}
+
+.tab-header button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.tab-header button.active {
+  color: #2d3748;
+}
+
+.tab-content {
+  flex-grow: 1;
+}
+
+.diary-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #718096;
+}
+
+.diary-date-title {
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #2d3748;
 }
 </style>

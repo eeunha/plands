@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.plands.backend.mapper.DiaryMapper">
+
+    <insert id="insertDiary" parameterType="com.plands.backend.dto.DiaryDto">
+        INSERT INTO diary (
+            member_id,
+            content,
+            diary_date,
+            image_path
+        ) VALUES (
+            #{memberId},
+            #{content},
+            #{diaryDate},
+            #{imagePath}
+        )
+    </insert>
+</mapper>

@@ -10,9 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiaryResponseDto {
-    private Long diary_id;     // 한 줄 일기 고유 번호
-    private Long member_id;    // 한 줄 일기 작성자 고유 번호
-    private String image_path; // 이미지 경로
+    private Long diaryId;     // 한 줄 일기 고유 번호
+    private Long memberId;    // 한 줄 일기 작성자 고유 번호
+    private String imagePath; // 이미지 경로
     private String content;    // 한 줄 일기 내용
-    private String diary_date; // 한 줄 일기 날짜
+    private String diaryDate; // 한 줄 일기 날짜
 }

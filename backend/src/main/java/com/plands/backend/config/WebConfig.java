@@ -24,5 +24,9 @@ public class WebConfig implements WebMvcConfigurer {
         // 다른 이미지도 있다면 별도 등록 가능
         registry.addResourceHandler("/uploads/post/**")
                 .addResourceLocations("file:/Users/imheejeong/project/plands/uploads/post/");
+
+        // 한 줄 일기 이미지
+        registry.addResourceHandler("/uploads/diary/**")
+                .addResourceLocations("file:C:/plands/uploads/diary/");
     }
 }

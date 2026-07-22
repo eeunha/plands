@@ -24,7 +24,7 @@ public class DiaryServiceImpl implements DiaryService {
 
     private final DiaryMapper diaryMapper;
 
-    // application.yml에 설정한 파일 저장 경로 주입 (./uploads)
+    // application.yml에 설정한 파일 저장 경로 주입 (C:/plands/uploads/)
     @Value("${file.upload-dir}")
     private String uploadDir;
 
@@ -84,25 +84,26 @@ public class DiaryServiceImpl implements DiaryService {
      */
     private String saveFileToLocal(MultipartFile image) {
         try {
-            // 업로드 디렉토리 객체 생성
-            File directory = new File(uploadDir);
-            if (!directory.exists()) {
-                directory.mkdirs(); // 폴더가 없으면 하위 폴더까지 전부 생성
+            // 1. 💡 윈도우 절대경로 뒤에 "diary" 폴더를 자바 코드에서 안전하게 붙여줌
+            // 예: C:/plands/uploads/ + "diary/" -> C:/plands/uploads/diary/
+            File diaryDirectory = new File(uploadDir, "diary");
+            if (!diaryDirectory.exists()) {
+                diaryDirectory.mkdirs(); // 폴더가 없으면 하위 폴더까지 전부 생성
             }
 
-            // 원본 파일 이름 추출 및 UUID 결합 (파일명 덮어쓰기 방지)
+            // 2. 원본 파일 이름 추출 및 UUID 결합 (파일명 덮어쓰기 방지)
             String originalFilename = image.getOriginalFilename();
             String uuid = UUID.randomUUID().toString();
-            String savedFilename = uuid + "." + originalFilename;
+            String savedFilename = uuid + "_" + originalFilename; // . 대신 _를 쓰면 구분하기 더 편해!
 
-            // 최종 저장 경로 설정 및 파일 전송
-            File destinationFile = new File(uploadDir, savedFilename);
+            // 3. 최종 물리 저장 위치 (C:/plands/uploads/diary/uuid_파일명)
+            File destinationFile = new File(diaryDirectory, savedFilename);
             image.transferTo(destinationFile);
 
             log.debug("[파일 저장 완료] 원본 이름: {}, 저장된 경로: {}", originalFilename, destinationFile.getAbsolutePath());
 
-            // DB에 저장할 상대 경로 혹은 절대 경로 문자열 반환 (예: /uploads/uuid_filename.jpg)
-            return "/uploads/" + savedFilename;
+            // 4. 💡 DB에 저장될 웹 접근 경로 (/uploads/diary/uuid_파일명)
+            return "/uploads/diary/" + savedFilename;
         } catch (IOException e) {
             log.error("[파일 저장 에러] 이미지 파일 처리 중 오류 발생", e);
             throw new RuntimeException("🚨 이미지 파일 저장에 실패했습니다.", e);

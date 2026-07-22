@@ -2,13 +2,13 @@
 import { ref, computed } from 'vue'
 import MyCalendar from '@/components/my-calendar/MyCalendar.vue'
 import DailySchedule from '@/components/my-calendar/DailySchedule.vue'
-import Diary from '@/components/my-calendar/Diary.vue'
+import MyDiary from '@/components/my-calendar/MyDiary.vue'
 import TodoRegisterModal from '@/components/modal/TodoRegisterModal.vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
 import DiaryRegisterModal from '@/components/modal/DiaryRegisterModal.vue'
 
-// 컴포저블 함수에서 상태(allEvents)와 API 호출 함수(fetchCalendarList) 가져오기
-const { allEvents, fetchCalendarList, deleteTodo } = useCalendarApi()
+// 컴포저블 함수에서 상태(allEvents, allDiaries)와 API 호출 함수 가져오기
+const { allEvents, allDiaries, fetchCalendarList, fetchDiaryList, deleteTodo } = useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
@@ -16,7 +16,7 @@ const isRegisterModalOpen = ref(false) // 할 일 등록 모달 열림 상태 �
 const isEditModalOpen = ref(false) // 수정 모달 열림 상태 추가
 const selectedTodoData = ref(null) // 수정 팝업에 채워넣을 데이터 바구니
 
-// 일기 등록 모달 상태
+// 일기 등록 모달 열림 상태 관리
 const isDiaryRegisterModalOpen = ref(false)
 
 // 달력 조회 시 썼던 날짜 범위를 기억해두기 위한 변수 (새로고침할 때 재사용!)
@@ -40,58 +40,83 @@ const filteredEvents = computed(() => {
   return allEvents.value.filter((event) => event.start === selectedDateStr)
 })
 
+// 선택한 날짜 하루치의 일기 데이터만 필터링
+const selectedDiary = computed(() => {
+  const selectedDateStr = formatDateStr(selectedDate.value)
+  if (!allDiaries.value) return []
+
+  console.log('받아온 전체 일기 리스트:', allDiaries.value)
+
+  // 백엔드 DTO의 일기 날짜 변수명에 맞춰 비교 (보통 diaryDate 등 사용)
+  return allDiaries.value.find((diary) => diary.diaryDate === selectedDateStr) || null
+})
+
 // 날짜를 선택했을 때
 const handleDateSelected = (dateStr) => {
   selectedDate.value = new Date(dateStr)
 }
 
-// 달력 월 변경 또는 최초 로드 시 기간별 데이터 조회
+// 달력 월 변경 또는 최초 로드 시 기간별 데이터 조회 (할 일 + 일기 동시 조회)
 const handleEventsLoaded = async ({ startDate, endDate }) => {
   currentPeriod.value = { startDate, endDate }
-  await fetchCalendarList({ startDate, endDate })
+
+  // 병렬로 할 일 목록과 일기 목록을 동시에 가져오기
+  await Promise.all([
+    fetchCalendarList({ startDate, endDate }),
+    fetchDiaryList({ startDate, endDate }),
+  ])
 }
 
-// 등록 및 수정 완료 시 공통 저장 핸들러
+const processSavedDate = (savedDateStr) => {
+  if (!savedDateStr) return true // 날짜 정보가 없으면 그대로 진행
+
+  const newDateObj = new Date(savedDateStr)
+
+  // [체크] 등록된 날짜가 현재 보고 있는 달력의 월과 같은지 비교
+  const isSameMonth =
+    selectedDate.value.getFullYear() === newDateObj.getFullYear() &&
+    selectedDate.value.getMonth() === newDateObj.getMonth()
+
+  // 1. 일단 선택된 하루(레이저 포인터)를 등록된 새 날짜로 변경!
+  selectedDate.value = newDateObj
+
+  // 2. 같은 달인지 여부를 반환 (true면 데이터 새로고침 진행, false면 멈춤)
+  return isSameMonth
+}
+
+// 할 일 등록 및 수정 완료 시 공통 저장 핸들러
 const handleTodoSaved = async (savedDateStr) => {
   // 수정 모달이 열려있었다면 닫아주기
   if (isEditModalOpen.value) isEditModalOpen.value = false
 
-  if (savedDateStr) {
-    const newDateObj = new Date(savedDateStr)
+  // 다른 달이면 헬퍼가 false를 주므로 바로 리턴!
+  if (!processSavedDate(savedDateStr)) return
 
-    // [체크] 등록된 날짜가 현재 보고 있는 달력의 월과 같은지 비교
-    const isSameMonth =
-      selectedDate.value.getFullYear() === newDateObj.getFullYear() &&
-      selectedDate.value.getMonth() === newDateObj.getMonth()
-
-    // 1. 일단 선택된 하루(레이저 포인터)를 등록된 새 날짜로 변경!
-    selectedDate.value = newDateObj
-
-    // 2. 만약 다른 달(7월)로 등록한 거라면?
-    // 부모가 selectedDate를 바꾸는 순간 자식(MyCalendar)의 watch가 작동해
-    // 알아서 달력을 7월로 넘기고 백엔드를 찌를 테니, 부모는 여기서 아무것도 안 해도 됨!
-    if (!isSameMonth) {
-      return
-    }
-  }
-
-  // 3. 만약 같은 달(6월) 안에서 등록한 거라면 화면 이동이 없으니 기존처럼 데이터만 새로고침!
-  await refreshCalendarList()
+  await refreshAllLists()
 }
 
-// 수정 모달 오픈 핸들러
+// 일기 등록 완료 시 실행될 저장 핸들러
+const handleDiarySaved = async (savedDateStr) => {
+  isDiaryRegisterModalOpen.value = false
+
+  if (!processSavedDate(savedDateStr)) return
+
+  await refreshAllLists()
+}
+
+// 할 일 수정 모달 오픈 핸들러
 const handleTodoEdit = (eventObj) => {
   selectedTodoData.value = eventObj // 클릭한 할 일 정보를 바구니에 저장
   isEditModalOpen.value = true // 수정 모달 열기!
 }
 
-// 삭제 핸들러
+// 할 일 삭제 핸들러
 const handleTodoDelete = async (todoId) => {
   const isSuccess = await deleteTodo(todoId)
 
   if (isSuccess) {
     alert('할 일이 성공적으로 삭제되었습니다. 🌿')
-    await refreshCalendarList()
+    await refreshAllLists()
   } else {
     alert('할 일 삭제에 실패했습니다.')
   }
@@ -106,12 +131,15 @@ const handleRegisterClick = () => {
   }
 }
 
-// 새로고침 공통 로직
-const refreshCalendarList = async () => {
+// 전체 목록(할 일 + 한 줄 일기) 새로고침 공통 로직
+const refreshAllLists = async () => {
   const { startDate, endDate } = currentPeriod.value
 
   if (startDate && endDate) {
-    await fetchCalendarList({ startDate, endDate })
+    await Promise.all([
+      fetchCalendarList({ startDate, endDate }),
+      fetchDiaryList({ startDate, endDate }),
+    ])
   } else {
     console.warn('CalendarView: 현재 기억된 달력 조회 기간이 없어 새로고침을 스킵합니다.')
   }
@@ -164,7 +192,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
           />
 
           <!-- '일기' 탭 내용 -->
-          <Diary v-else :selected-date="selectedDate" />
+          <MyDiary v-else :selected-date="selectedDate" :diary-data="selectedDiary" />
         </div>
       </div>
     </div>

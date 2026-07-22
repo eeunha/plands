@@ -6,6 +6,7 @@ const cachedMemberPlants = ref(null)
 
 export function useCalendarApi() {
   const allEvents = ref([])
+  const allDiaries = ref([])
   const loading = ref(false)
   const error = ref(null)
 
@@ -14,6 +15,7 @@ export function useCalendarApi() {
     cachedTodoTypes.value = null
     cachedMemberPlants.value = null
     allEvents.value = []
+    allDiaries.value = []
   }
 
   // 캘린더 전체 할 일 조회 함수 (GET)
@@ -121,7 +123,7 @@ export function useCalendarApi() {
     }
   }
 
-  // --- 일기(Diary) 관련 API ---
+  // --- 일기(MyDiary) 관련 API ---
   // 새 한 줄 일기 등록 함수 (POST)
   const createDiary = async (diaryData) => {
     loading.value = true
@@ -150,8 +152,27 @@ export function useCalendarApi() {
     }
   }
 
+  // 한 줄 일기 목록(한달) 조회 함수 (GET)
+  const fetchDiaryList = async ({ startDate, endDate }) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.get('/api/diary', {
+        params: { startDate, endDate },
+      })
+      allDiaries.value = res.data
+      return res.data // 필요 시 컴포넌트단에서도 바로 받아 쓸 수 있게 반환
+    } catch (err) {
+      error.value = err
+      console.error('한 줄 일기 데이터 가져오기 실패:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     allEvents,
+    allDiaries,
     loading,
     error,
     resetCalendarState,
@@ -162,5 +183,6 @@ export function useCalendarApi() {
     deleteTodo,
     updateTodo,
     createDiary,
+    fetchDiaryList,
   }
 }

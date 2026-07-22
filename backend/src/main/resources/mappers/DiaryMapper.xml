@@ -27,6 +27,6 @@
         FROM diary
         WHERE member_id = #{memberId}
             AND diary_date >= #{startDate}
-            AND diary_date <= #{endDate}
+            <![CDATA[ AND diary_date <= #{endDate} ]]>
     </select>
 </mapper>

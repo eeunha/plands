@@ -1,7 +1,11 @@
 package com.plands.backend.mapper;
 
 import com.plands.backend.dto.DiaryDto;
+import com.plands.backend.dto.response.DiaryResponseDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface DiaryMapper {
@@ -12,4 +16,8 @@ public interface DiaryMapper {
      * @return 성공 시 영향받은 행(Row)의 개수
      */
     int insertDiary(DiaryDto diaryDto);
+
+    List<DiaryResponseDto> selectDiaryList(@Param("memberId") Long memberId,
+                                           @Param("startDate") String startDate,
+                                           @Param("endDate") String endDate);
 }

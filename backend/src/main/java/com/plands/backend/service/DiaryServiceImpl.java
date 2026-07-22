@@ -2,6 +2,7 @@ package com.plands.backend.service;
 
 import com.plands.backend.dto.DiaryDto;
 import com.plands.backend.dto.request.DiaryCreateRequestDto;
+import com.plands.backend.dto.response.DiaryResponseDto;
 import com.plands.backend.mapper.DiaryMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -35,6 +37,7 @@ public class DiaryServiceImpl implements DiaryService {
     @Override
     @Transactional
     public void createDiary(Long memberId, DiaryCreateRequestDto requestDto) {
+        log.info("====== 한 줄 일기 등록 서비스 레이어 DB 호출 ======");
 
         // 0. 요청 데이터가 null인지 체크
         if (requestDto == null) {
@@ -68,6 +71,14 @@ public class DiaryServiceImpl implements DiaryService {
         log.info("[일기 생성 성공] memberId={}, diaryDate={}, imagePath={}", memberId, requestDto.getDiaryDate(), imagePath);
     }
 
+    @Override
+    public List<DiaryResponseDto> getDiaryList(Long memberId, String startDate, String endDate) {
+        log.info("====== 한 줄 일기 조회 서비스 레이어 DB 호출 ======");
+        log.debug("조회 유저 ID: {}, 조회 기간(한 달): {} ~ {}", memberId, startDate, endDate);
+
+        return diaryMapper.selectDiaryList(memberId, startDate, endDate);
+    }
+
     /**
      * 업로드된 이미지를 로컬 디렉토리에 안전하게 저장하고, DB에 기록할 경로를 반환합니다.
      */
@@ -97,4 +108,5 @@ public class DiaryServiceImpl implements DiaryService {
             throw new RuntimeException("🚨 이미지 파일 저장에 실패했습니다.", e);
         }
     }
+
 }

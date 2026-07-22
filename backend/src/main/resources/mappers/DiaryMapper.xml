@@ -16,4 +16,17 @@
             #{imagePath}
         )
     </insert>
+
+    <select id="selectDiaryList" resultType="com.plands.backend.dto.response.DiaryResponseDto">
+        SELECT
+            diary_id,
+            member_id,
+            image_path,
+            content,
+            diary_date
+        FROM diary
+        WHERE member_id = #{memberId}
+            AND diary_date >= #{startDate}
+            AND diary_date <= #{endDate}
+    </select>
 </mapper>

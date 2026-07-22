@@ -1,6 +1,7 @@
 package com.plands.backend.controller;
 
 import com.plands.backend.dto.request.DiaryCreateRequestDto;
+import com.plands.backend.dto.response.DiaryResponseDto;
 import com.plands.backend.service.DiaryService;
 import com.plands.backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -8,10 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -22,7 +22,7 @@ public class DiaryController {
     private final MemberService memberService;
     private final DiaryService diaryService;
 
-    // UserDetails에서 memberId를 안전하게 꺼내오는 든든한 헬퍼 메서드!
+    // UserDetails에서 memberId를 안전하게 꺼내오는 든든한 헬퍼 메서드
     private Long getAuthenticatedMemberId(UserDetails userDetails) {
 
         // 1. 토큰의 Subject에서 로그인한 유저의 이메일(혹은 소셜 식별 아이디) 추출
@@ -40,13 +40,36 @@ public class DiaryController {
                 .getMemberId();
     }
 
+    // 새 한 줄 일기 등록 API
     @PostMapping
     public ResponseEntity<String> createDiary(@AuthenticationPrincipal UserDetails userDetails, @ModelAttribute DiaryCreateRequestDto requestDto) {
+
+        log.info("====== 한 줄 일기 등록 컨트롤러 진입 ======");
 
         Long memberId = getAuthenticatedMemberId(userDetails);
 
         diaryService.createDiary(memberId, requestDto);
 
         return ResponseEntity.ok("일기가 성공적으로 등록되었습니다.");
+    }
+
+    // 새 한 줄 일기 목록 조회 API
+    @GetMapping
+    public ResponseEntity<List<DiaryResponseDto>> getDiaryList(@AuthenticationPrincipal UserDetails userDetails, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
+
+        log.info("====== 한 줄 일기 목록 조회 컨트롤러 진입 ======");
+
+        // 1. 시큐리티 세션에서 유저 고유 PK(memberId) 안전하게 추출
+        Long memberId = getAuthenticatedMemberId(userDetails);
+
+        log.debug("🔍 DB에서 조회된 진짜 회원 번호(memberId) -> {}", memberId);
+        log.debug("요청 파라미터 -> startDate: {}, endDate: {}", startDate, endDate);
+
+        // 2. 서비스 레이어를 통해 월별 일기 목록 조회
+        List<DiaryResponseDto> diaryList = diaryService.getDiaryList(memberId, startDate, endDate);
+
+        log.info("[일기 목록 조회 성공] memberId={}, 조회 건수: {}건", memberId, diaryList.size());
+
+        return ResponseEntity.ok(diaryList);
     }
 }

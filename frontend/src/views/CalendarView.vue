@@ -2,17 +2,22 @@
 import { ref, computed } from 'vue'
 import MyCalendar from '@/components/my-calendar/MyCalendar.vue'
 import DailySchedule from '@/components/my-calendar/DailySchedule.vue'
+import Diary from '@/components/my-calendar/Diary.vue'
 import TodoRegisterModal from '@/components/modal/TodoRegisterModal.vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
+import DiaryRegisterModal from '@/components/modal/DiaryRegisterModal.vue'
 
 // 컴포저블 함수에서 상태(allEvents)와 API 호출 함수(fetchCalendarList) 가져오기
 const { allEvents, fetchCalendarList, deleteTodo } = useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
-const isRegisterModalOpen = ref(false) // 모달 열림 상태 관리
+const isRegisterModalOpen = ref(false) // 할 일 등록 모달 열림 상태 관리
 const isEditModalOpen = ref(false) // 수정 모달 열림 상태 추가
 const selectedTodoData = ref(null) // 수정 팝업에 채워넣을 데이터 바구니
+
+// 일기 등록 모달 상태
+const isDiaryRegisterModalOpen = ref(false)
 
 // 달력 조회 시 썼던 날짜 범위를 기억해두기 위한 변수 (새로고침할 때 재사용!)
 const currentPeriod = ref({ startDate: '', endDate: '' })
@@ -92,6 +97,15 @@ const handleTodoDelete = async (todoId) => {
   }
 }
 
+// 탭에 따라 등록 버튼을 눌렀을 때 실행될 통합 핸들러
+const handleRegisterClick = () => {
+  if (activeTab.value === 'todo') {
+    isRegisterModalOpen.value = true // 할 일 등록 모달 오픈
+  } else if (activeTab.value === 'diary') {
+    isDiaryRegisterModalOpen.value = true // 일기 등록 모달 오픈
+  }
+}
+
 // 새로고침 공통 로직
 const refreshCalendarList = async () => {
   const { startDate, endDate } = currentPeriod.value
@@ -124,12 +138,17 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
       <div class="schedule-section">
         <!-- 우측 상단 탭 헤더 -->
         <div class="tab-header">
-          <button :class="{ active: activeTab === 'todo' }" @click="activeTab = 'todo'">
-            할 일
-          </button>
-          <button :class="{ active: activeTab === 'diary' }" @click="activeTab = 'diary'">
-            일기
-          </button>
+          <div class="tab-buttons">
+            <button :class="{ active: activeTab === 'todo' }" @click="activeTab = 'todo'">
+              할 일
+            </button>
+            <button :class="{ active: activeTab === 'diary' }" @click="activeTab = 'diary'">
+              일기
+            </button>
+          </div>
+
+          <!-- 등록 버튼 -->
+          <button class="btn-register" @click="handleRegisterClick">등록</button>
         </div>
 
         <!-- 탭에 따른 컨텐츠 전환 영역 -->
@@ -144,16 +163,13 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
             @edit-todo="handleTodoEdit"
           />
 
-          <!-- '일기' 탭 내용 (나중에 Diary 컴포넌트로 분리 예정) -->
-          <div v-else class="diary-pane">
-            <p class="diary-date-title">{{ selectedDateString }}의 일기</p>
-            <!-- 여기에 일기 이미지와 내용이 들어갈 예정입니다. -->
-          </div>
+          <!-- '일기' 탭 내용 -->
+          <Diary v-else :selected-date="selectedDate" />
         </div>
       </div>
     </div>
 
-    <!-- 등록 모달 -->
+    <!-- 할 일 등록 모달 -->
     <TodoRegisterModal
       v-if="isRegisterModalOpen"
       :initial-date="selectedDateString"
@@ -161,7 +177,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
       @saved="handleTodoSaved"
     />
 
-    <!-- 수정 모달 -->
+    <!-- 할 일 수정 모달 -->
     <TodoRegisterModal
       v-if="isEditModalOpen"
       :is-edit-mode="true"
@@ -169,6 +185,14 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
       :initial-date="selectedTodoData ? selectedTodoData.start : selectedDateString"
       @close="isEditModalOpen = false"
       @saved="handleTodoSaved"
+    />
+
+    <!-- 한 줄 일기 등록 모달 -->
+    <DiaryRegisterModal
+      v-if="isDiaryRegisterModalOpen"
+      :initial-date="selectedDateString"
+      @close="isDiaryRegisterModalOpen = false"
+      @saved="handleDiarySaved"
     />
   </div>
 </template>
@@ -200,25 +224,69 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
 
 .tab-header {
   display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #edf2f7;
+  justify-content: space-between; /* 좌우 끝으로 정렬 */
+  align-items: center;
   padding-bottom: 10px;
 }
 
-.tab-header button {
+.tab-buttons {
+  display: flex;
+  gap: 15px;
+
+  padding-bottom: 10px;
+  flex-grow: 1; /* 탭 영역이 남은 공간을 쓰게 해서 버튼과 확실히 분리 */
+  margin-right: 20px;
+  padding-top: 10px;
+}
+
+.tab-header .tab-buttons button {
   background: none;
   border: none;
   font-size: 18px;
   font-weight: bold;
   color: #a0aec0;
   cursor: pointer;
-  padding: 0;
+  padding: 0 0 3px 0;
+  position: relative;
   transition: color 0.2s ease;
 }
 
-.tab-header button.active {
+.tab-header .tab-buttons button.active {
   color: #2d3748;
+}
+
+/* 활성화된 탭 아래에만 예쁜 초록색 포인트 밑줄 주기 (선택사항) */
+.tab-header .tab-buttons button.active::after {
+  content: '';
+  position: absolute;
+  //bottom: -12px; /* 밑줄 위치 맞추기 */
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #10b981;
+  border-radius: 2px;
+
+  bottom: -4px;
+}
+
+.btn-register {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 22px; /* 위아래 패딩과 좌우 패딩을 늘려서 버튼 키우기 */
+  font-size: 15px; /* 글씨 크기도 살짝 키우기 */
+  border-radius: 24px; /* 더 매끄러운 타원형으로 */
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); /* 은은한 입체감 추가 */
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+  white-space: nowrap; /* 글자 줄바꿈 방지 */
+}
+
+.btn-register:hover {
+  background-color: #059669;
 }
 
 .tab-content {
@@ -230,7 +298,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 500px;
   color: #718096;
 }
 

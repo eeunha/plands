@@ -137,8 +137,8 @@ export function useCalendarApi() {
 
       await api.post('/api/diary', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-        }
+          'Content-Type': undefined, // 👈 전역 설정된 application/json을 무시하고 브라우저가 boundary를 잡게 함!
+        },
       })
       return true
     } catch (err) {

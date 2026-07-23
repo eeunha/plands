@@ -170,6 +170,22 @@ export function useCalendarApi() {
     }
   }
 
+  // 한 줄 일기 삭제 함수 (DELETE)
+  const deleteDiary = async (diaryId) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.delete(`/api/diary/${diaryId}`)
+      return true
+    } catch (err) {
+      error.value = err
+      console.error('한 줄 일기 삭제 실패:', err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     allEvents,
     allDiaries,
@@ -184,5 +200,6 @@ export function useCalendarApi() {
     updateTodo,
     createDiary,
     fetchDiaryList,
+    deleteDiary,
   }
 }

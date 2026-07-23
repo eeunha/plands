@@ -14,6 +14,9 @@ const props = defineProps({
   },
 })
 
+// 💡 부모 컴포넌트로 삭제 요청 이벤트를 던지기 위한 emit 선언
+const emit = defineEmits(['delete-diary'])
+
 // 백엔드 서버 주소
 const BACKEND_URL = 'http://localhost:8081'
 
@@ -29,6 +32,13 @@ const resolvedImageUrl = computed(() => {
 const formattedDate = computed(() => {
   return format(props.selectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko })
 })
+
+// 🌟 삭제 버튼을 클릭했을 때 작동하는 함수
+const clickDeleteDiary = (diaryId) => {
+  if (confirm('이 일기를 정말 삭제하시겠습니까? 복구 불가!')) {
+    emit('delete-diary', diaryId)
+  }
+}
 </script>
 
 <template>
@@ -36,6 +46,16 @@ const formattedDate = computed(() => {
     <!-- 상단 선택된 날짜 타이틀 -->
     <div class="diary-date-title">
       <h3>{{ formattedDate }}</h3>
+
+      <!-- 일기가 존재할 때만 삭제 버튼 노출 -->
+      <button
+        v-if="props.diaryData"
+        class="btn-delete"
+        @click="clickDeleteDiary(props.diaryData.diaryId)"
+        title="일기 삭제"
+      >
+        🗑️
+      </button>
     </div>
 
     <!-- 일기가 존재하는 경우 -->
@@ -73,11 +93,37 @@ const formattedDate = computed(() => {
 }
 
 .diary-date-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 18px;
   font-weight: bold;
   color: #2d3748;
   margin-bottom: 20px;
+  padding-bottom: 10px;
   border-bottom: 2px solid #edf2f7;
+}
+
+.diary-date-title h3 {
+  margin: 0;
+}
+
+/* 🌟 할 일 컴포넌트와 동일한 깔끔한 삭제 버튼 스타일 */
+.btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2; /* 붉은 마우스 오버 효과 */
+  transform: scale(1.1);
 }
 
 /* 일기가 있을 때의 스타일 박스 */

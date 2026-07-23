@@ -8,7 +8,8 @@ import { useCalendarApi } from '@/composables/useCalendarApi.js'
 import DiaryRegisterModal from '@/components/modal/DiaryRegisterModal.vue'
 
 // 컴포저블 함수에서 상태(allEvents, allDiaries)와 API 호출 함수 가져오기
-const { allEvents, allDiaries, fetchCalendarList, fetchDiaryList, deleteTodo } = useCalendarApi()
+const { allEvents, allDiaries, fetchCalendarList, fetchDiaryList, deleteTodo, deleteDiary } =
+  useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
@@ -122,6 +123,18 @@ const handleTodoDelete = async (todoId) => {
   }
 }
 
+// 한 줄 일기 삭제 핸들러
+const handleDeleteDiary = async (diaryId) => {
+  const isSuccess = await deleteDiary(diaryId)
+
+  if (isSuccess) {
+    alert('한 줄 일기가 성공적으로 삭제되었습니다. 🌿')
+    await refreshAllLists()
+  } else {
+    alert('할 일 삭제에 실패했습니다.')
+  }
+}
+
 // 탭에 따라 등록 버튼을 눌렀을 때 실행될 통합 핸들러
 const handleRegisterClick = () => {
   if (activeTab.value === 'todo') {
@@ -192,7 +205,12 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
           />
 
           <!-- '일기' 탭 내용 -->
-          <MyDiary v-else :selected-date="selectedDate" :diary-data="selectedDiary" />
+          <MyDiary
+            v-else
+            :selected-date="selectedDate"
+            :diary-data="selectedDiary"
+            @delete-diary="handleDeleteDiary"
+          />
         </div>
       </div>
     </div>

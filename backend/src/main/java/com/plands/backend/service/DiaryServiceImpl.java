@@ -34,9 +34,10 @@ public class DiaryServiceImpl implements DiaryService {
 
     /**
      * 새로운 일기를 생성합니다.
-     * 1. 요청 데이터 유효성 및 미래 날짜 입력 여부를 검증합니다.
-     * 2. 첨부 이미지가 존재할 경우 로컬 디렉토리에 저장합니다.
-     * 3. 일기 정보 및 이미지 접근 경로를 DB에 등록합니다.
+     * 1. 요청 날짜에 작성된 일기가 이미 있는지 검증합니다.
+     * 2. 요청 데이터 유효성 및 미래 날짜 입력 여부를 검증합니다.
+     * 3. 첨부 이미지가 존재할 경우 로컬 디렉토리에 저장합니다.
+     * 4. 일기 정보 및 이미지 접근 경로를 DB에 등록합니다.
      *
      * @param memberId   작성자 회원 ID
      * @param requestDto 일기 생성 요청 데이터 (내용, 날짜, 이미지 파일 등)
@@ -52,13 +53,19 @@ public class DiaryServiceImpl implements DiaryService {
             throw new IllegalArgumentException("요청 데이터가 누락되었습니다.");
         }
 
-        // 1. 미래 날짜 검증
+        // 1. 이미 해당 날짜에 작성된 일기가 있는지 중복 체크
+        if (diaryMapper.existsByMemberIdAndDiaryDate(memberId, requestDto.getDiaryDate())) {
+            log.warn("[일기 생성 실패] 이미 작성된 일기가 존재함: memberId={}, date={}", memberId, requestDto.getDiaryDate());
+            throw new IllegalArgumentException("이미 해당 날짜에 작성된 일기가 존재합니다.");
+        }
+
+        // 2. 미래 날짜 검증
         if (requestDto.getDiaryDate().isAfter(LocalDate.now())) {
             log.warn("[일기 생성 실패] 미래 날짜 입력 시도: memberId={}, date={}", memberId, requestDto.getDiaryDate());
             throw new IllegalArgumentException("미래 날짜로 일기를 작성할 수 없습니다.");
         }
 
-        // 2. 이미지 파일 로컬 저장
+        // 3. 이미지 파일 로컬 저장
         String imagePath = null;
         MultipartFile image = requestDto.getImage();
 
@@ -66,7 +73,7 @@ public class DiaryServiceImpl implements DiaryService {
             imagePath = saveFileToLocal(image);
         }
 
-        // 3. DB 저장
+        // 4. DB 저장
         DiaryDto diaryDto = DiaryDto.builder()
                 .memberId(memberId)
                 .content(requestDto.getContent())

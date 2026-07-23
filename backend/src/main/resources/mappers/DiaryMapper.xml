@@ -24,6 +24,16 @@
     <!-- ================================================================= -->
     <!-- [조회 - Read] -->
     <!-- ================================================================= -->
+    <!-- 특정 날짜이ㅡ 일기 존재 여부 확인 -->
+    <select id="existsByMemberIdAndDiaryDate" resultType="boolean">
+    SELECT EXISTS (
+        SELECT 1
+        FROM diary
+        WHERE member_id = #{memberId}
+          AND diary_date = #{diaryDate}
+    )
+    </select>
+
     <!-- 한 줄 일기 목록 조회 -->
     <select id="selectDiaryList" resultType="com.plands.backend.dto.response.DiaryResponseDto">
         SELECT

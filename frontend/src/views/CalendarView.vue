@@ -96,15 +96,6 @@ const handleTodoSaved = async (savedDateStr) => {
   await refreshAllLists()
 }
 
-// 일기 등록 완료 시 실행될 저장 핸들러
-const handleDiarySaved = async (savedDateStr) => {
-  isDiaryRegisterModalOpen.value = false
-
-  if (!processSavedDate(savedDateStr)) return
-
-  await refreshAllLists()
-}
-
 // 할 일 수정 모달 오픈 핸들러
 const handleTodoEdit = (eventObj) => {
   selectedTodoData.value = eventObj // 클릭한 할 일 정보를 바구니에 저장
@@ -123,16 +114,37 @@ const handleTodoDelete = async (todoId) => {
   }
 }
 
+// 한 줄 일기 등록 완료 시 실행될 저장 핸들러
+const handleDiarySaved = async (savedDateStr) => {
+  isDiaryRegisterModalOpen.value = false
+
+  if (!processSavedDate(savedDateStr)) return
+
+  await refreshAllLists()
+}
+
 // 한 줄 일기 삭제 핸들러
 const handleDeleteDiary = async (diaryId) => {
   const isSuccess = await deleteDiary(diaryId)
 
   if (isSuccess) {
-    alert('한 줄 일기가 성공적으로 삭제되었습니다. 🌿')
     await refreshAllLists()
-  } else {
-    alert('할 일 삭제에 실패했습니다.')
   }
+}
+
+// 💡 오늘 날짜 YYYY-MM-DD 구하기
+const getTodayStr = () => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// 💡 미래 날짜 판별 함수
+const isFutureDate = (dateStr) => {
+  if (!dateStr) return false
+  return dateStr > getTodayStr()
 }
 
 // 탭에 따라 등록 버튼을 눌렀을 때 실행될 통합 핸들러
@@ -140,7 +152,23 @@ const handleRegisterClick = () => {
   if (activeTab.value === 'todo') {
     isRegisterModalOpen.value = true // 할 일 등록 모달 오픈
   } else if (activeTab.value === 'diary') {
-    isDiaryRegisterModalOpen.value = true // 일기 등록 모달 오픈
+    // 현재 선택된 날짜에 이미 작성된 일기가 있는지 검사
+    const targetDateStr = formatDateStr(selectedDate.value)
+    const isExist = allDiaries.value?.some((diary) => diary.diaryDate === targetDateStr)
+
+    // 1. 미래 날짜 먼저 차단
+    if (isFutureDate(targetDateStr)) {
+      alert('미래 날짜에는 일기를 등록할 수 없습니다. 📅')
+      return
+    }
+
+    // 2. 이미 작성된 일기 체크
+    if (isExist) {
+      alert('선택하신 날짜에는 이미 작성된 일기가 있습니다! 🌿\n기존 일기를 확인해 주세요.')
+      return // 👈 일기 등록 모달을 열지 않고 함수 종료!
+    }
+
+    isDiaryRegisterModalOpen.value = true // 일기가 없는 날짜일 때만 모달 오픈
   }
 }
 

@@ -33,6 +33,26 @@ const formattedDate = computed(() => {
   return format(props.selectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko })
 })
 
+// 💡 미래 날짜 여부 판단 computed (시간대 버그 방지 문자열 비교)
+const isFutureDate = computed(() => {
+  if (!props.selectedDate) return false
+
+  // 오늘 날짜를 YYYY-MM-DD 문자열로 구하기
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  const todayStr = `${year}-${month}-${day}`
+
+  // 선택된 날짜를 YYYY-MM-DD 문자열로 구하기
+  const selectedYear = props.selectedDate.getFullYear()
+  const selectedMonth = String(props.selectedDate.getMonth() + 1).padStart(2, '0')
+  const selectedDay = String(props.selectedDate.getDate()).padStart(2, '0')
+  const selectedStr = `${selectedYear}-${selectedMonth}-${selectedDay}`
+
+  return selectedStr > todayStr
+})
+
 // 🌟 삭제 버튼을 클릭했을 때 작동하는 함수
 const clickDeleteDiary = (diaryId) => {
   if (confirm('이 일기를 정말 삭제하시겠습니까? 복구 불가!')) {
@@ -73,9 +93,19 @@ const clickDeleteDiary = (diaryId) => {
 
     <!-- 일기가 없는 빈 상태인 경우 -->
     <div v-else class="diary-empty-box">
-      <div class="empty-icon">🌿</div>
-      <p>이 날은 작성된 일기가 없어요.</p>
-      <span class="empty-subtext">우측 상단 '등록' 버튼을 눌러 소중한 하루를 기록해 보세요!</span>
+      <!-- 1. 미래 날짜인 경우 -->
+      <template v-if="isFutureDate">
+        <div class="empty-icon">🚀</div>
+        <p>아직 다가오지 않은 날짜입니다.</p>
+        <span class="empty-subtext">해당 날짜가 되면 소중한 일기를 작성할 수 있어요!</span>
+      </template>
+
+      <!-- 2. 과거 또는 오늘인데 일기가 없는 경우 -->
+      <template v-else>
+        <div class="empty-icon">🌿</div>
+        <p>이 날은 작성된 일기가 없어요.</p>
+        <span class="empty-subtext">우측 상단 '등록' 버튼을 눌러 소중한 하루를 기록해 보세요!</span>
+      </template>
     </div>
   </div>
 </template>

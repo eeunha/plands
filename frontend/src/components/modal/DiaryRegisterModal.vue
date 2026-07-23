@@ -33,14 +33,41 @@ const handleFileChange = (event) => {
   }
 }
 
+// 한국 시간(로컬) 기준 오늘 날짜를 'YYYY-MM-DD' 문자열로 구하는 함수
+const getTodayStr = () => {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}` // 예: '2026-07-23'
+}
+
+// 미래 날짜 판별 함수 (문자열 대소 비교로 시차 버그 100% 방지)
+const isFutureDate = (dateStr) => {
+  if (!dateStr) return false
+
+  const todayStr = getTodayStr()
+
+  // 예: '2026-07-24' > '2026-07-23' 👉 true (미래 날짜)
+  return dateStr > todayStr
+}
+
 // 일기 저장 핸들러
 const saveDiary = async () => {
+  // 1. 유효성 검사 (입력 체크)
   if (!diaryForm.date) {
     return alert('날짜를 선택해주세요')
   }
+
+  // 2. 1차 프론트엔드 유효성 검사 (미래 날짜 차단)
+  if (isFutureDate(diaryForm.date)) {
+    return alert('미래 날짜에는 일기를 작성할 수 없습니다! 📅')
+  }
+
   if (!diaryForm.imageFile) {
     return alert('사진은 반드시 첨부해야 합니다.📸')
   }
+
   if (!diaryForm.content.trim()) {
     return alert('한 줄 일기 내용을 입력해주세요.')
   }
@@ -51,14 +78,16 @@ const saveDiary = async () => {
     image: diaryForm.imageFile,
   }
 
-  const isSuccess = await createDiary(diaryPayload)
+  // 3. composable의 API 호출 응답 객체 처리 ({ success, message })
+  const result = await createDiary(diaryPayload)
 
-  if (isSuccess) {
+  if (result.success) {
     alert('한 줄 일기가 성공적으로 등록되었습니다. 🌿')
     emit('saved', diaryForm.date)
     emit('close')
   } else {
-    alert('한 줄 일기 등록에 실패했습니다. 다시 시도해주세요.')
+    // 백엔드에서 넘어온 상세 에러 메시지(예: "미래 날짜에는 일기를 작성할 수 없습니다.") 표시
+    alert(result.message || '한 줄 일기 등록에 실패했습니다. 다시 시도해주세요.')
   }
 }
 </script>

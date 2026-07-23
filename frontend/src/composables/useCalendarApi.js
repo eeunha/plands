@@ -142,11 +142,15 @@ export function useCalendarApi() {
           'Content-Type': undefined, // 👈 전역 설정된 application/json을 무시하고 브라우저가 boundary를 잡게 함!
         },
       })
-      return true
+      return { success: true } // 성공 시 객체 반환
     } catch (err) {
       error.value = err
-      console.error('한 줄 일기 등록 실패:', err)
-      return false
+
+      // 백엔드에서 던진 예외 메시지 꺼내기 (없을 경우 기본 메시지)
+      const serverMessage = err.response?.data?.error || '한 줄 일기 등록에 실패했습니다.'
+
+      // 실패 시 메시지와 함께 객체 반환
+      return { success: false, message: serverMessage }
     } finally {
       loading.value = false
     }

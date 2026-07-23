@@ -1,6 +1,7 @@
 package com.plands.backend.mapper;
 
 import com.plands.backend.dto.DiaryDto;
+import com.plands.backend.dto.DiaryDeleteTargetDto;
 import com.plands.backend.dto.response.DiaryResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,7 +18,14 @@ public interface DiaryMapper {
      */
     int insertDiary(DiaryDto diaryDto);
 
+    // 한 줄 일기 목록 조회 (한달)
     List<DiaryResponseDto> selectDiaryList(@Param("memberId") Long memberId,
                                            @Param("startDate") String startDate,
                                            @Param("endDate") String endDate);
+
+    // 한 줄 일기 삭제 전 정보 조회
+    DiaryDeleteTargetDto findDeleteTargetById(@Param("diaryId") Long diaryId);
+
+    // 한 줄 일기 완전 삭제
+    int deleteDiary(@Param("diaryId") Long diaryId);
 }

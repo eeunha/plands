@@ -53,7 +53,7 @@ public class DiaryController {
         return ResponseEntity.ok("일기가 성공적으로 등록되었습니다.");
     }
 
-    // 새 한 줄 일기 목록 조회 API
+    // 한 줄 일기 목록 조회 API
     @GetMapping
     public ResponseEntity<List<DiaryResponseDto>> getDiaryList(@AuthenticationPrincipal UserDetails userDetails, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
 
@@ -71,5 +71,18 @@ public class DiaryController {
         log.info("[일기 목록 조회 성공] memberId={}, 조회 건수: {}건", memberId, diaryList.size());
 
         return ResponseEntity.ok(diaryList);
+    }
+
+    // 한 줄 일기 삭제 API
+    @DeleteMapping("/{diaryId}")
+    public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId, @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("====== 한 줄 일기 삭제 컨트롤러 진입 ======");
+        log.debug("프론트에서 넘어온 삭제 대상 ID: {}", diaryId);
+
+        Long curUserId = getAuthenticatedMemberId(userDetails);
+
+        diaryService.deleteDiary(diaryId, curUserId);
+
+        return ResponseEntity.ok().build();
     }
 }

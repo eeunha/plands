@@ -54,7 +54,7 @@ public class TodoController {
         log.debug("요청 파라미터 -> startDate: {}, endDate: {}", startDate, endDate);
 
         // 서비스 레이어를 호출하여 한 달 치 데이터 가득 담긴 상자 더미 수령
-        List<CalendarResponseDto> todoList = calendarService.getCalendarList(memberId, startDate, endDate);
+        List<CalendarResponseDto> todoList = calendarService.findCalendarList(memberId, startDate, endDate);
 
         // 상태 코드 200(OK)과 함께 프론트엔드로 응답 전송
         return ResponseEntity.ok(todoList);
@@ -71,7 +71,7 @@ public class TodoController {
         todoRequestDto.setMemberId(memberId);
 
         // 💡 @RequestBody가 프론트에서 쏜 JSON 데이터를 자바 DTO 객체(참조변수 주소값)로 찰떡같이 변환해줘!
-        todoService.createTodo(todoRequestDto);
+        todoService.registerTodo(todoRequestDto);
 
         return ResponseEntity.ok("할 일이 성공적으로 등록되었습니다.");
     }
@@ -81,20 +81,9 @@ public class TodoController {
     public ResponseEntity<List<TodoTypeResponseDto>> getTodoTypes() {
         log.info("====== 할 일 종류 조회 컨트롤러 진입 ======");
 
-        List<TodoTypeResponseDto> list = todoService.getTodoTypeList();
+        List<TodoTypeResponseDto> list = todoService.findTodoTypeList();
 
         return ResponseEntity.ok(list);
-    }
-
-    // 할 일 삭제 API (Soft Delete)
-    @DeleteMapping("/{todoId}")
-    public ResponseEntity<String> deleteTodo(@PathVariable Long todoId) {
-        log.info("====== 할 일 삭제 컨트롤러 진입 ======");
-        log.debug("프론트에서 넘어온 삭제 대상 ID: {}", todoId);
-
-        todoService.deleteTodo(todoId);
-
-        return ResponseEntity.ok("할 일이 성공적으로 삭제되었습니다.");
     }
 
     // 할 일 수정 API
@@ -104,8 +93,19 @@ public class TodoController {
         log.info("====== 할 일 수정 컨트롤러 진입 ======");
         log.debug("수정할 할 일 ID: {}", todoId);
 
-        todoService.updateTodo(todoId, todoRequestDto);
+        todoService.modifyTodo(todoId, todoRequestDto);
 
         return ResponseEntity.ok("할 일이 성공적으로 수정되었습니다.");
+    }
+
+    // 할 일 삭제 API (Soft Delete)
+    @DeleteMapping("/{todoId}")
+    public ResponseEntity<String> deleteTodo(@PathVariable Long todoId) {
+        log.info("====== 할 일 삭제 컨트롤러 진입 ======");
+        log.debug("프론트에서 넘어온 삭제 대상 ID: {}", todoId);
+
+        todoService.removeTodo(todoId);
+
+        return ResponseEntity.ok("할 일이 성공적으로 삭제되었습니다.");
     }
 }

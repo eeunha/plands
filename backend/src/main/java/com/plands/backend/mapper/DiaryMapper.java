@@ -46,7 +46,7 @@ public interface DiaryMapper {
      * @param diaryId 삭제할 일기 ID
      * @return 삭제 대상 정보 (작성자 memberId, 저장된 imagePath 등)
      */
-    DiaryDeleteTargetDto findDeleteTargetById(@Param("diaryId") Long diaryId);
+    DiaryDeleteTargetDto selectDeleteTargetById(@Param("diaryId") Long diaryId);
 
     /**
      * 일기 데이터를 데이터베이스에서 완전 삭제(Hard Delete)합니다.

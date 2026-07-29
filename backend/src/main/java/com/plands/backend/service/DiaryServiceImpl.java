@@ -45,7 +45,7 @@ public class DiaryServiceImpl implements DiaryService {
      */
     @Override
     @Transactional
-    public void createDiary(Long memberId, DiaryCreateRequestDto requestDto) {
+    public void registerDiary(Long memberId, DiaryCreateRequestDto requestDto) {
         log.info("====== 한 줄 일기 등록 서비스 레이어 DB 호출 ======");
 
         // 0. 요청 데이터가 null인지 체크
@@ -95,7 +95,7 @@ public class DiaryServiceImpl implements DiaryService {
      * @return 해당 기간 내 작성된 한 줄 일기 응답 DTO 리스트
      */
     @Override
-    public List<DiaryResponseDto> getDiaryList(Long memberId, String startDate, String endDate) {
+    public List<DiaryResponseDto> findDiaryList(Long memberId, String startDate, String endDate) {
         log.info("====== 한 줄 일기 조회 서비스 레이어 DB 호출 ======");
         log.debug("조회 유저 ID: {}, 조회 기간(한 달): {} ~ {}", memberId, startDate, endDate);
 
@@ -117,9 +117,9 @@ public class DiaryServiceImpl implements DiaryService {
         log.info("====== 한 줄 일기 삭제 서비스 레이어 진입 (diaryId: {}) ======", diaryId);
 
         // ----------------------------------------------------
-        // Step 1: 삭제 대상 데이터 사전 조회
+        // Step 1: 수정 대상 데이터 사전 조회
         // ----------------------------------------------------
-        DiaryDeleteTargetDto target = diaryMapper.findDeleteTargetById(diaryId);
+        DiaryDeleteTargetDto target = diaryMapper.selectDeleteTargetById(diaryId);
 
         // 1-1. 일기 존재 여부 확인
         if (target == null) {

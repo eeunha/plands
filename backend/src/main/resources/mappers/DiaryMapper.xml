@@ -52,7 +52,7 @@
     <!-- [삭제 - Delete] -->
     <!-- ================================================================= -->
     <!-- 한 줄 일기 삭제 전 조회 -->
-    <select id="findDeleteTargetById" resultType="com.plands.backend.dto.DiaryDeleteTargetDto">
+    <select id="selectDeleteTargetById" resultType="com.plands.backend.dto.DiaryDeleteTargetDto">
         SELECT
             diary_id,
             member_id,

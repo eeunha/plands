@@ -1,10 +1,6 @@
 package com.plands.backend.controller;
 
-import com.plands.backend.dto.request.TodoRequestDto;
-import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.dto.response.MemberPlantResponseDto;
-import com.plands.backend.dto.response.TodoTypeResponseDto;
-import com.plands.backend.service.CalendarService;
 import com.plands.backend.service.MemberService;
 import com.plands.backend.service.TodoService;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +45,7 @@ public class CalendarController {
 
         Long memberId = getAuthenticatedMemberId(userDetails);
 
-        List<MemberPlantResponseDto> list = todoService.getMemberPlantList(memberId);
+        List<MemberPlantResponseDto> list = todoService.findMemberPlantList(memberId);
 
         return ResponseEntity.ok(list);
     }

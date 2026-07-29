@@ -48,7 +48,7 @@ public class DiaryController {
 
         Long memberId = getAuthenticatedMemberId(userDetails);
 
-        diaryService.createDiary(memberId, requestDto);
+        diaryService.registerDiary(memberId, requestDto);
 
         return ResponseEntity.ok("일기가 성공적으로 등록되었습니다.");
     }
@@ -66,7 +66,7 @@ public class DiaryController {
         log.debug("요청 파라미터 -> startDate: {}, endDate: {}", startDate, endDate);
 
         // 2. 서비스 레이어를 통해 월별 일기 목록 조회
-        List<DiaryResponseDto> diaryList = diaryService.getDiaryList(memberId, startDate, endDate);
+        List<DiaryResponseDto> diaryList = diaryService.findDiaryList(memberId, startDate, endDate);
 
         log.info("[일기 목록 조회 성공] memberId={}, 조회 건수: {}건", memberId, diaryList.size());
 

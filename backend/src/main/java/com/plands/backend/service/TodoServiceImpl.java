@@ -20,7 +20,7 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     @Transactional // 하나라도 실패하면 롤백해주는 안전장치
-    public void createTodo(TodoRequestDto todoRequestDto) {
+    public void registerTodo(TodoRequestDto todoRequestDto) {
 
         // 1. 마스터 테이블(todo)에 인서트 -> todoId가 가방 주소에 자동으로 채워짐
         int affectedRows = todoMapper.insertTodo(todoRequestDto);
@@ -47,18 +47,18 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public List<TodoTypeResponseDto> getTodoTypeList() {
+    public List<TodoTypeResponseDto> findTodoTypeList() {
         return todoMapper.selectTodoTypes();
     }
 
     @Override
-    public List<MemberPlantResponseDto> getMemberPlantList(Long memberId) {
+    public List<MemberPlantResponseDto> findMemberPlantList(Long memberId) {
         return todoMapper.selectMemberPlants(memberId);
     }
 
     @Override
     @Transactional // 💡 마스터 수정과 매핑 삭제가 한 세트로 묶여야 하므로 트랜잭션 필수!
-    public void deleteTodo(Long todoId) {
+    public void removeTodo(Long todoId) {
         log.info("====== 할 일 삭제 서비스 레이어 진입 (todoId: {}) ======", todoId);
 
         // 1. Soft Delete 진행
@@ -77,7 +77,7 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     @Transactional // 💡 마스터 수정, 매핑 삭제 및 재등록이 한 세트이므로 트랜잭션 필수!
-    public void updateTodo(Long todoId,  TodoRequestDto todoRequestDto) {
+    public void modifyTodo(Long todoId, TodoRequestDto todoRequestDto) {
         log.info("====== 할 일 수정 서비스 레이어 진입 ======");
 
         // 쿼리에서 사용 가능하게 todoId 강제로 DTO에 넣어주기

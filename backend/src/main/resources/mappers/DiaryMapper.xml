@@ -61,12 +61,12 @@
             <if test="content != null and content != ''">
                 content = #{content},
             </if>
-            <if test="diary_date != null">
+            <if test="diaryDate != null">
                 diary_date = #{diaryDate},
             </if>
         </set>
         WHERE diary_id = #{diaryId}
-        AND member+id = #{memberId}
+        AND member_id = #{memberId}
     </update>
 
     <!-- ================================================================= -->

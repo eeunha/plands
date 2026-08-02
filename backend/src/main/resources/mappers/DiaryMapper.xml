@@ -24,7 +24,7 @@
     <!-- ================================================================= -->
     <!-- [조회 - Read] -->
     <!-- ================================================================= -->
-    <!-- 특정 날짜이ㅡ 일기 존재 여부 확인 -->
+    <!-- 특정 날짜의 일기 존재 여부 확인 -->
     <select id="existsByMemberIdAndDiaryDate" resultType="boolean">
     SELECT EXISTS (
         SELECT 1
@@ -47,6 +47,27 @@
             AND diary_date >= #{startDate}
             <![CDATA[ AND diary_date <= #{endDate} ]]>
     </select>
+
+    <!-- ================================================================= -->
+    <!-- [수정 - Update] -->
+    <!-- ================================================================= -->
+    <!-- 한 줄 일기 수정 -->
+    <update id="updateDiary" parameterType="com.plands.backend.dto.request.DiaryUpdateRequestDto">
+        UPDATE diary
+        <set>
+            <if test="imagePath != null and imagePath != ''">
+                image_path = #{imagePath},
+            </if>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="diary_date != null">
+                diary_date = #{diaryDate},
+            </if>
+        </set>
+        WHERE diary_id = #{diaryId}
+        AND member+id = #{memberId}
+    </update>
 
     <!-- ================================================================= -->
     <!-- [삭제 - Delete] -->

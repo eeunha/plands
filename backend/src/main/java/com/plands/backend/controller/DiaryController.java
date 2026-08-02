@@ -1,6 +1,8 @@
 package com.plands.backend.controller;
 
+import com.plands.backend.dto.DiaryDto;
 import com.plands.backend.dto.request.DiaryCreateRequestDto;
+import com.plands.backend.dto.request.DiaryUpdateRequestDto;
 import com.plands.backend.dto.response.DiaryResponseDto;
 import com.plands.backend.service.DiaryService;
 import com.plands.backend.service.MemberService;
@@ -42,7 +44,8 @@ public class DiaryController {
 
     // 새 한 줄 일기 등록 API
     @PostMapping
-    public ResponseEntity<String> createDiary(@AuthenticationPrincipal UserDetails userDetails, @ModelAttribute DiaryCreateRequestDto requestDto) {
+    public ResponseEntity<String> createDiary(@AuthenticationPrincipal UserDetails userDetails,
+                                              @ModelAttribute DiaryCreateRequestDto requestDto) {
 
         log.info("====== 한 줄 일기 등록 컨트롤러 진입 ======");
 
@@ -71,6 +74,23 @@ public class DiaryController {
         log.info("[일기 목록 조회 성공] memberId={}, 조회 건수: {}건", memberId, diaryList.size());
 
         return ResponseEntity.ok(diaryList);
+    }
+
+    @PatchMapping("/{diaryId}")
+    public ResponseEntity<Void> updateDiary(@PathVariable Long diaryId,
+                                            @ModelAttribute DiaryUpdateRequestDto requestDto,
+                                            @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("====== 한 줄 일기 수정 컨트롤러 진입 ======");
+        log.debug("프론트에서 넘어온 수정 대상 ID: {}", diaryId);
+
+        Long memberId = getAuthenticatedMemberId(userDetails);
+
+        requestDto.setDiaryId(diaryId);
+        requestDto.setMemberId(memberId);
+
+        diaryService.modifyDiary(requestDto);
+
+        return ResponseEntity.ok().build();
     }
 
     // 한 줄 일기 삭제 API

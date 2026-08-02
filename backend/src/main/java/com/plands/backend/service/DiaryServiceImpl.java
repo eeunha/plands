@@ -3,6 +3,7 @@ package com.plands.backend.service;
 import com.plands.backend.dto.DiaryDeleteTargetDto;
 import com.plands.backend.dto.DiaryDto;
 import com.plands.backend.dto.request.DiaryCreateRequestDto;
+import com.plands.backend.dto.request.DiaryUpdateRequestDto;
 import com.plands.backend.dto.response.DiaryResponseDto;
 import com.plands.backend.mapper.DiaryMapper;
 import lombok.RequiredArgsConstructor;
@@ -101,6 +102,81 @@ public class DiaryServiceImpl implements DiaryService {
 
         return diaryMapper.selectDiaryList(memberId, startDate, endDate);
     }
+
+    /**
+     * 특정 한 줄 일기를 수정합니다.
+     *
+     * <p>수정 요청 시 전달된 DTO를 바탕으로 소유권을 검증하며,
+     * 새로운 이미지 파일이 포함된 경우 기존 파일을 대체하고 로컬 스토리지를 정리합니다.
+     * 새로운 이미지 파일이 없는 경우 기존 이미지 경로는 유지됩니다.</p>
+     *
+     * @param diaryDto   수정할 일기 정보와 새로운 이미지 파일이 포함된 요청 DTO (diaryId, memberId 필수)
+     * @throws IllegalArgumentException 필수 값이 누락되었거나 일기가 존재하지 않는 경우
+     * @throws SecurityException        요청한 사용자가 해당 일기의 작성자가 아닌 경우
+     * @throws IllegalStateException    DB 업데이트 처리가 정상적으로 완료되지 않은 경우
+     */
+    @Override
+    @Transactional
+    public void modifyDiary(DiaryUpdateRequestDto diaryDto) {
+        log.info("====== 한 줄 일기 수정 서비스 레이어 진입 (diaryId: {}) ======", diaryDto.getDiaryId());
+
+        // 필수 값 누락 방어
+        if (diaryDto.getDiaryId() == null) {
+            throw new IllegalArgumentException("수정할 일기 ID가 누락되었습니다.");
+        }
+        if (diaryDto.getMemberId() == null) {
+            throw new IllegalArgumentException("회원 정보가 누락되었습니다.");
+        }
+
+        Long diaryId = diaryDto.getDiaryId();
+        Long curMemberId = diaryDto.getMemberId();
+
+        // ----------------------------------------------------
+        // Step 1: 수정 대상 데이터 사전 조회 (기존 사진 경로 파악용)
+        // ----------------------------------------------------
+        DiaryDeleteTargetDto target = diaryMapper.selectDeleteTargetById(diaryId);
+
+        // 1-1. 일기 존재 여부 확인
+        if (target == null) {
+            throw new IllegalArgumentException("존재하지 않거나 이미 삭제된 한 줄 일기입니다. ID: " + diaryId);
+        }
+
+        // 1-2. 본인 글인지 권한 검증 (Security UserDetails에서 온 ID 비교)
+        if (!target.getMemberId().equals(curMemberId)) {
+            throw new SecurityException("해당 한 줄 일기를 수정할 권한이 없습니다.");
+        }
+
+        // ----------------------------------------------------
+        // Step 2: 이미지 파일 처리
+        // ----------------------------------------------------
+        MultipartFile newImage = diaryDto.getImage();
+
+        // 새로운 사진으로 수정 시
+        if (newImage != null && !newImage.isEmpty()) {
+            // 1. 새 파일 로컬 저장
+            String imagePath = saveFileToLocal(newImage);
+
+            // 2. DTO에 새 경로 세팅 (XML의 <if>에 걸려서 이 경로로 업데이트됨)
+            diaryDto.setImagePath(imagePath);
+
+            // 3. 서버에 남아있던 기존(옛날) 사진 물리 삭제
+            if (target.getImagePath() != null && !target.getImagePath().isBlank()) {
+                deleteLocalFile(target.getImagePath());
+            }
+        }
+
+        // ----------------------------------------------------
+        // Step 3: DB 업데이트 수행
+        // ----------------------------------------------------
+        int updatedRows = diaryMapper.updateDiary(diaryDto);
+
+        if (updatedRows != 1) {
+            throw new IllegalStateException("한 줄 일기 수정 처리에 실패했습니다.");
+        }
+
+        log.info("====== 한 줄 일기 수정 완료 (diaryId: {}) ======", diaryId);
+    }
+
 
     /**
      * 작성한 한 줄 일기를 삭제하고, 첨부된 이미지 파일을 서버 로컬에서 물리 삭제합니다.

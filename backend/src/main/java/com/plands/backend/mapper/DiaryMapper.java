@@ -2,6 +2,7 @@ package com.plands.backend.mapper;
 
 import com.plands.backend.dto.DiaryDto;
 import com.plands.backend.dto.DiaryDeleteTargetDto;
+import com.plands.backend.dto.request.DiaryUpdateRequestDto;
 import com.plands.backend.dto.response.DiaryResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -41,7 +42,7 @@ public interface DiaryMapper {
                                            @Param("endDate") String endDate);
 
     /**
-     * 일기 삭제 및 로컬 파일 삭제 처리를 위해 삭제 대상 일기의 정보를 조회합니다.
+     * 한 줄 일기 삭제 및 로컬 파일 삭제 처리를 위해 삭제 대상 일기의 정보를 조회합니다.
      *
      * @param diaryId 삭제할 일기 ID
      * @return 삭제 대상 정보 (작성자 memberId, 저장된 imagePath 등)
@@ -49,7 +50,15 @@ public interface DiaryMapper {
     DiaryDeleteTargetDto selectDeleteTargetById(@Param("diaryId") Long diaryId);
 
     /**
-     * 일기 데이터를 데이터베이스에서 완전 삭제(Hard Delete)합니다.
+     * 한 줄 일기 정보를 수정합니다. (일부 항목 선택적 수정 가능)
+     *
+     * @param diaryDto 수정할 한 줄 일기 정보가 담긴 DTO (diaryId, memberId 및 변경할 필드)
+     * @return 성공 시 영향받은 행(Row)의 개수
+     */
+    int updateDiary(DiaryUpdateRequestDto diaryDto);
+
+    /**
+     * 한 줄 일기 데이터를 데이터베이스에서 완전 삭제(Hard Delete)합니다.
      *
      * @param diaryId 삭제할 일기 ID
      * @return 성공 시 영향받은 행(Row)의 개수

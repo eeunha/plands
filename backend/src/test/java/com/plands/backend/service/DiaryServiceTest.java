@@ -1,6 +1,7 @@
 package com.plands.backend.service;
 
 import com.plands.backend.dto.request.DiaryCreateRequestDto;
+import com.plands.backend.dto.request.DiaryUpdateRequestDto;
 import com.plands.backend.dto.response.DiaryResponseDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,4 +57,49 @@ public class DiaryServiceTest {
         assertThat(diaryList.get(0).getImagePath()).isNotNull();
     }
 
+    @Test
+    @DisplayName("한 줄 일기 이미지 변경 테스트")
+    void modifyDiaryImageTest() {
+        // given: 1. 테스트에 사용할 회원 ID와 일기 등록 요청 DTO 준비
+        Long memberId = 1L;
+        LocalDate today = LocalDate.now();
+
+        MockMultipartFile originalImage = new MockMultipartFile(
+                "image", "old-image.jpg", "image/jpeg", "old image content".getBytes()
+        );
+
+        DiaryCreateRequestDto createDto = new DiaryCreateRequestDto();
+        createDto.setContent("이미지 변경 테스트용 일기");
+        createDto.setDiaryDate(today);
+        createDto.setImage(originalImage);
+
+        diaryService.registerDiary(memberId, createDto);
+
+        // 방금 등록된 일기 ID와 기존 이미지 경로 확보
+        List<DiaryResponseDto> initialList = diaryService.findDiaryList(memberId, today.toString(), today.toString());
+        Long diaryId = initialList.get(0).getDiaryId();
+        String oldImagePath = initialList.get(0).getImagePath();
+
+        // given: 2. 완전히 새로운 이미지 준비
+        MockMultipartFile newImage = new MockMultipartFile(
+                "image", "new-image.jpg", "image/jpeg", "new image content".getBytes()
+        );
+
+        DiaryUpdateRequestDto updateDto = new DiaryUpdateRequestDto();
+        updateDto.setDiaryId(diaryId);
+        updateDto.setMemberId(memberId);
+        updateDto.setContent("이미지만 바꿀래요"); // 텍스트는 유지하거나 변경
+        updateDto.setDiaryDate(today);
+        updateDto.setImage(newImage); //새 이미지 주입
+
+        // when: 3. 수정 서비스 호출
+        diaryService.modifyDiary(updateDto);
+
+        // then: 4. 수정 후 이미지 경로가 기존과 달라졌는지(새로 잘 교체되었는지) 검증
+        List<DiaryResponseDto> updatedList = diaryService.findDiaryList(memberId, today.toString(), today.toString());
+        String newImagePath = updatedList.get(0).getImagePath();
+
+        assertThat(newImagePath).isNotNull();
+        assertThat(newImagePath).isNotEqualTo(oldImagePath); // 기존 경로와 달라야 성공!
+    }
 }

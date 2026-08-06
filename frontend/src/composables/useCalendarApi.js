@@ -10,6 +10,10 @@ export function useCalendarApi() {
   const loading = ref(false)
   const error = ref(null)
 
+  // ==========================================
+  // 📅 [Part 1] 달력 전체 조회 및 공통 유틸
+  // ==========================================
+
   // 캐시와 일정 목록 비우기
   const resetCalendarState = () => {
     cachedTodoTypes.value = null
@@ -35,7 +39,7 @@ export function useCalendarApi() {
     }
   }
 
-  // 💡 모달 폼용: 할 일 카테고리 타입 리스트 조회 (GET)
+  // 모달 폼용: 할 일 카테고리 타입 리스트 조회 (GET)
   const getTodoTypes = async () => {
     // 1. 이미 기억해둔 데이터가 있다면? 백엔드 안 찌르고 바로 반환!
     if (cachedTodoTypes.value) {
@@ -55,7 +59,7 @@ export function useCalendarApi() {
     }
   }
 
-  // 💡 모달 폼용: 회원의 반려 식물 리스트 조회 (GET)
+  // 모달 폼용: 회원의 반려 식물 리스트 조회 (GET)
   const getMemberPlants = async () => {
     // 1. 이미 기억해둔 데이터가 있다면? 바로 반환!
     if (cachedMemberPlants.value) {
@@ -75,6 +79,10 @@ export function useCalendarApi() {
     }
   }
 
+  // ==========================================
+  // ✅ [Part 2] Todo (할 일) 관련 CRUD
+  // ==========================================
+
   // 새 할 일 등록 함수 (POST)
   const createTodo = async (todoData) => {
     loading.value = true
@@ -85,22 +93,6 @@ export function useCalendarApi() {
     } catch (err) {
       error.value = err
       console.error('할 일 등록 실패:', err)
-      return false
-    } finally {
-      loading.value = false
-    }
-  }
-
-  // 할 일 삭제 함수 (DELETE) - soft delete도 delete. 행위의 목적!
-  const deleteTodo = async (todoId) => {
-    loading.value = true
-    error.value = null
-    try {
-      const res = await api.delete(`/api/todo/${todoId}`)
-      return true
-    } catch (err) {
-      error.value = err
-      console.error('할 일 삭제 실패:', err)
       return false
     } finally {
       loading.value = false
@@ -123,7 +115,44 @@ export function useCalendarApi() {
     }
   }
 
-  // --- 일기(MyDiary) 관련 API ---
+  // 할 일 삭제 함수 (DELETE) - soft delete도 delete. 행위의 목적!
+  const deleteTodo = async (todoId) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.delete(`/api/todo/${todoId}`)
+      return true
+    } catch (err) {
+      error.value = err
+      console.error('할 일 삭제 실패:', err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ==========================================
+  // 📖 [Part 3] Diary (한 줄 일기) 관련 CRUD
+  // ==========================================
+
+  // 한 줄 일기 목록(한달) 조회 함수 (GET)
+  const fetchDiaryList = async ({ startDate, endDate }) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.get('/api/diary', {
+        params: { startDate, endDate },
+      })
+      allDiaries.value = res.data
+      return res.data // 필요 시 컴포넌트단에서도 바로 받아 쓸 수 있게 반환
+    } catch (err) {
+      error.value = err
+      console.error('한 줄 일기 데이터 가져오기 실패:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 새 한 줄 일기 등록 함수 (POST)
   const createDiary = async (diaryData) => {
     loading.value = true
@@ -156,19 +185,33 @@ export function useCalendarApi() {
     }
   }
 
-  // 한 줄 일기 목록(한달) 조회 함수 (GET)
-  const fetchDiaryList = async ({ startDate, endDate }) => {
+  // 한 줄 일기 수정 함수 (POST + FromData)
+  const updateDiary = async (diaryId, diaryData) => {
     loading.value = true
     error.value = null
     try {
-      const res = await api.get('/api/diary', {
-        params: { startDate, endDate },
+      const formData = new FormData()
+      formData.append('content', diaryData.content)
+      formData.append('diaryDate', diaryData.diaryDate)
+
+      // 새로 선택한 이미지 파일이 있는 경우에만 추가
+      if (diaryData.image) {
+        formData.append('image', diaryData.image)
+      }
+
+      await api.post(`/api/diary/${diaryId}`, formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
       })
-      allDiaries.value = res.data
-      return res.data // 필요 시 컴포넌트단에서도 바로 받아 쓸 수 있게 반환
+      return { success: true }
     } catch (err) {
       error.value = err
-      console.error('한 줄 일기 데이터 가져오기 실패:', err)
+
+      // 백엔드에서 던진 예외 메시지 꺼내기 (없을 경우 기본 메시지)
+      const serverMessage = err.response?.data?.error || '한 줄 일기 수정에 실패했습니다.'
+
+      return { success: false, message: serverMessage }
     } finally {
       loading.value = false
     }
@@ -191,19 +234,25 @@ export function useCalendarApi() {
   }
 
   return {
+    // 상태 및 공통 유틸
     allEvents,
     allDiaries,
     loading,
     error,
     resetCalendarState,
+
+    // 달력 및 Todo 관련 액션
     fetchCalendarList,
     getTodoTypes,
     getMemberPlants,
     createTodo,
-    deleteTodo,
     updateTodo,
-    createDiary,
+    deleteTodo,
+
+    // Diary 관련 액션
     fetchDiaryList,
+    createDiary,
+    updateDiary,
     deleteDiary,
   }
 }

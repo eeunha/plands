@@ -14,8 +14,8 @@ const props = defineProps({
   },
 })
 
-// 💡 부모 컴포넌트로 삭제 요청 이벤트를 던지기 위한 emit 선언
-const emit = defineEmits(['delete-diary'])
+// 부모 컴포넌트로 삭제 요청 이벤트를 던지기 위한 emit 선언
+const emit = defineEmits(['edit-diary', 'edit-diary', 'delete-diary'])
 
 // 백엔드 서버 주소
 const BACKEND_URL = 'http://localhost:8081'
@@ -53,7 +53,12 @@ const isFutureDate = computed(() => {
   return selectedStr > todayStr
 })
 
-// 🌟 삭제 버튼을 클릭했을 때 작동하는 함수
+// 수정 버튼을 클릭했을 때 작동하는 함수
+const clickEditDiary = (diaryObj) => {
+  emit('edit-diary', diaryObj)
+}
+
+// 삭제 버튼을 클릭했을 때 작동하는 함수
 const clickDeleteDiary = (diaryId) => {
   if (confirm('이 일기를 정말 삭제하시겠습니까? 복구 불가!')) {
     emit('delete-diary', diaryId)
@@ -67,15 +72,19 @@ const clickDeleteDiary = (diaryId) => {
     <div class="diary-date-title">
       <h3>{{ formattedDate }}</h3>
 
-      <!-- 일기가 존재할 때만 삭제 버튼 노출 -->
-      <button
-        v-if="props.diaryData"
-        class="btn-delete"
-        @click="clickDeleteDiary(props.diaryData.diaryId)"
-        title="일기 삭제"
-      >
-        🗑️
-      </button>
+      <!-- 일기가 존재할 때만 수정/삭제 버튼 노출 -->
+      <div v-if="props.diaryData" class="button-group">
+        <button class="btn-edit" @click="clickEditDiary(props.diaryData)" title="일기 수정">
+          ✏️
+        </button>
+        <button
+          class="btn-delete"
+          @click="clickDeleteDiary(props.diaryData.diaryId)"
+          title="일기 삭제"
+        >
+          🗑️
+        </button>
+      </div>
     </div>
 
     <!-- 일기가 존재하는 경우 -->
@@ -136,6 +145,28 @@ const clickDeleteDiary = (diaryId) => {
 
 .diary-date-title h3 {
   margin: 0;
+}
+
+.button-group {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+
+.btn-edit:hover {
+  background-color: #e6f4ea; /* 에메랄드 한 스푼 얹은 마우스오버 */
+  transform: scale(1.1);
 }
 
 /* 🌟 할 일 컴포넌트와 동일한 깔끔한 삭제 버튼 스타일 */

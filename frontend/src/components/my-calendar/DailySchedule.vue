@@ -15,7 +15,7 @@ const props = defineProps({
 })
 
 // 💡 부모에게 신호를 보내기 위한 emit 정의
-const emit = defineEmits(['open-register', 'delete-todo', 'edit-todo'])
+const emit = defineEmits(['open-register', 'edit-todo', 'delete-todo'])
 
 const formattedDate = computed(() => {
   return format(props.selectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko })

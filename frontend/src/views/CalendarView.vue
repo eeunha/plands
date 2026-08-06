@@ -8,17 +8,27 @@ import { useCalendarApi } from '@/composables/useCalendarApi.js'
 import DiaryRegisterModal from '@/components/modal/DiaryRegisterModal.vue'
 
 // 컴포저블 함수에서 상태(allEvents, allDiaries)와 API 호출 함수 가져오기
-const { allEvents, allDiaries, fetchCalendarList, fetchDiaryList, deleteTodo, deleteDiary } =
-  useCalendarApi()
+const {
+  allEvents,
+  allDiaries,
+  fetchCalendarList,
+  fetchDiaryList,
+  deleteTodo,
+  deleteDiary,
+} = useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
-const isRegisterModalOpen = ref(false) // 할 일 등록 모달 열림 상태 관리
-const isEditModalOpen = ref(false) // 수정 모달 열림 상태 추가
+const isTodoRegisterModalOpen = ref(false) // 할 일 등록 모달 열림 상태 관리
+const isTodoEditModalOpen = ref(false) // 할 일 수정 모달 열림 상태 추가
 const selectedTodoData = ref(null) // 수정 팝업에 채워넣을 데이터 바구니
 
-// 일기 등록 모달 열림 상태 관리
+// 한 줄 일기 등록 모달 열림 상태 관리
 const isDiaryRegisterModalOpen = ref(false)
+
+// 한 줄 일기 수정 모달 관련 상태
+const isDiaryEditModalOpen = ref(false)
+const selectedDiaryData = ref(null)
 
 // 달력 조회 시 썼던 날짜 범위를 기억해두기 위한 변수 (새로고침할 때 재사용!)
 const currentPeriod = ref({ startDate: '', endDate: '' })
@@ -88,7 +98,7 @@ const processSavedDate = (savedDateStr) => {
 // 할 일 등록 및 수정 완료 시 공통 저장 핸들러
 const handleTodoSaved = async (savedDateStr) => {
   // 수정 모달이 열려있었다면 닫아주기
-  if (isEditModalOpen.value) isEditModalOpen.value = false
+  if (isTodoEditModalOpen.value) isTodoEditModalOpen.value = false
 
   // 다른 달이면 헬퍼가 false를 주므로 바로 리턴!
   if (!processSavedDate(savedDateStr)) return
@@ -99,7 +109,7 @@ const handleTodoSaved = async (savedDateStr) => {
 // 할 일 수정 모달 오픈 핸들러
 const handleTodoEdit = (eventObj) => {
   selectedTodoData.value = eventObj // 클릭한 할 일 정보를 바구니에 저장
-  isEditModalOpen.value = true // 수정 모달 열기!
+  isTodoEditModalOpen.value = true // 수정 모달 열기!
 }
 
 // 할 일 삭제 핸들러
@@ -123,8 +133,23 @@ const handleDiarySaved = async (savedDateStr) => {
   await refreshAllLists()
 }
 
+// 한 줄 일기 수정 모달 오픈 핸들러 (MyDiary 컴포넌트에서 이벤트로 올려받을 함수)
+const handleDiaryEdit = (diaryObj) => {
+  selectedDiaryData.value = diaryObj // 수정할 기존 일기 데이터 담기
+  isDiaryEditModalOpen.value = true // 한 줄 일기 수정 모달 열기
+}
+
+// 한 줄 일기 수정 완료 시 실행될 저장 핸들러
+const handleDiaryUpdated = async (savedDateStr) => {
+  isDiaryEditModalOpen.value = false
+
+  if (!processSavedDate(savedDateStr)) return
+
+  await refreshAllLists()
+}
+
 // 한 줄 일기 삭제 핸들러
-const handleDeleteDiary = async (diaryId) => {
+const handleDiaryDelete = async (diaryId) => {
   const isSuccess = await deleteDiary(diaryId)
 
   if (isSuccess) {
@@ -150,7 +175,7 @@ const isFutureDate = (dateStr) => {
 // 탭에 따라 등록 버튼을 눌렀을 때 실행될 통합 핸들러
 const handleRegisterClick = () => {
   if (activeTab.value === 'todo') {
-    isRegisterModalOpen.value = true // 할 일 등록 모달 오픈
+    isTodoRegisterModalOpen.value = true // 할 일 등록 모달 오픈
   } else if (activeTab.value === 'diary') {
     // 현재 선택된 날짜에 이미 작성된 일기가 있는지 검사
     const targetDateStr = formatDateStr(selectedDate.value)
@@ -227,7 +252,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
             v-if="activeTab === 'todo'"
             :selected-date="selectedDate"
             :events="filteredEvents"
-            @open-register="isRegisterModalOpen = true"
+            @open-register="isTodoRegisterModalOpen = true"
             @delete-todo="handleTodoDelete"
             @edit-todo="handleTodoEdit"
           />
@@ -237,7 +262,8 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
             v-else
             :selected-date="selectedDate"
             :diary-data="selectedDiary"
-            @delete-diary="handleDeleteDiary"
+            @edit-diary="handleDiaryEdit"
+            @delete-diary="handleDiaryDelete"
           />
         </div>
       </div>
@@ -245,19 +271,19 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
 
     <!-- 할 일 등록 모달 -->
     <TodoRegisterModal
-      v-if="isRegisterModalOpen"
+      v-if="isTodoRegisterModalOpen"
       :initial-date="selectedDateString"
-      @close="isRegisterModalOpen = false"
+      @close="isTodoRegisterModalOpen = false"
       @saved="handleTodoSaved"
     />
 
     <!-- 할 일 수정 모달 -->
     <TodoRegisterModal
-      v-if="isEditModalOpen"
+      v-if="isTodoEditModalOpen"
       :is-edit-mode="true"
       :todo-data="selectedTodoData"
       :initial-date="selectedTodoData ? selectedTodoData.start : selectedDateString"
-      @close="isEditModalOpen = false"
+      @close="isTodoEditModalOpen = false"
       @saved="handleTodoSaved"
     />
 
@@ -267,6 +293,15 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
       :initial-date="selectedDateString"
       @close="isDiaryRegisterModalOpen = false"
       @saved="handleDiarySaved"
+    />
+
+    <!-- 한 줄 일기 수정 모달 -->
+    <DiaryEditModal
+      v-if="isDiaryEditModalOpen"
+      :diary-data="selectedDiaryData"
+      :initial-date="selectedDateString"
+      @close="isDiaryEditModalOpen = false"
+      @saved="handleDiaryUpdated"
     />
   </div>
 </template>

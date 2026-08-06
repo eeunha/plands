@@ -76,7 +76,7 @@ public class DiaryController {
         return ResponseEntity.ok(diaryList);
     }
 
-    @PatchMapping("/{diaryId}")
+    @PostMapping("/{diaryId}")
     public ResponseEntity<Void> updateDiary(@PathVariable Long diaryId,
                                             @ModelAttribute DiaryUpdateRequestDto requestDto,
                                             @AuthenticationPrincipal UserDetails userDetails) {

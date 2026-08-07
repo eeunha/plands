@@ -3,19 +3,13 @@ import { ref, computed } from 'vue'
 import MyCalendar from '@/components/my-calendar/MyCalendar.vue'
 import DailySchedule from '@/components/my-calendar/DailySchedule.vue'
 import MyDiary from '@/components/my-calendar/MyDiary.vue'
-import TodoRegisterModal from '@/components/modal/TodoRegisterModal.vue'
+import TodoFormModal from '@/components/modal/TodoFormModal.vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
-import DiaryRegisterModal from '@/components/modal/DiaryRegisterModal.vue'
+import DiaryFormModal from '@/components/modal/DiaryFormModal.vue'
 
 // 컴포저블 함수에서 상태(allEvents, allDiaries)와 API 호출 함수 가져오기
-const {
-  allEvents,
-  allDiaries,
-  fetchCalendarList,
-  fetchDiaryList,
-  deleteTodo,
-  deleteDiary,
-} = useCalendarApi()
+const { allEvents, allDiaries, fetchCalendarList, fetchDiaryList, deleteTodo, deleteDiary } =
+  useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
@@ -270,7 +264,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
     </div>
 
     <!-- 할 일 등록 모달 -->
-    <TodoRegisterModal
+    <TodoFormModal
       v-if="isTodoRegisterModalOpen"
       :initial-date="selectedDateString"
       @close="isTodoRegisterModalOpen = false"
@@ -278,7 +272,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
     />
 
     <!-- 할 일 수정 모달 -->
-    <TodoRegisterModal
+    <TodoFormModal
       v-if="isTodoEditModalOpen"
       :is-edit-mode="true"
       :todo-data="selectedTodoData"
@@ -288,7 +282,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
     />
 
     <!-- 한 줄 일기 등록 모달 -->
-    <DiaryRegisterModal
+    <DiaryFormModal
       v-if="isDiaryRegisterModalOpen"
       :initial-date="selectedDateString"
       @close="isDiaryRegisterModalOpen = false"
@@ -296,8 +290,9 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
     />
 
     <!-- 한 줄 일기 수정 모달 -->
-    <DiaryEditModal
+    <DiaryFormModal
       v-if="isDiaryEditModalOpen"
+      :is-edit-mode="true"
       :diary-data="selectedDiaryData"
       :initial-date="selectedDateString"
       @close="isDiaryEditModalOpen = false"
@@ -400,20 +395,5 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
 
 .tab-content {
   flex-grow: 1;
-}
-
-.diary-pane {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 500px;
-  color: #718096;
-}
-
-.diary-date-title {
-  font-weight: bold;
-  margin-bottom: 15px;
-  color: #2d3748;
 }
 </style>

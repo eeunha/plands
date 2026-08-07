@@ -1,6 +1,6 @@
 <script setup>
 import '@/assets/styles/modal.css'
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useCalendarApi } from '@/composables/useCalendarApi.js'
 
 const props = defineProps({
@@ -8,11 +8,31 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isEditMode: {
+    type: Boolean,
+    default: false,
+  },
+  diaryData: {
+    type: Object,
+    default: null,
+  },
 })
 
 const emit = defineEmits(['saved', 'close'])
 
-const { createDiary } = useCalendarApi()
+const { createDiary, updateDiary } = useCalendarApi()
+
+// 알림 메시지 상단 상수 분리 (TodoFormModal과 일치하는 패턴)
+const MODAL_TEXTS = {
+  edit: {
+    success: '한 줄 일기가 성공적으로 수정되었습니다. 🌱',
+    fail: '한 줄 일기 수정에 실패했습니다.',
+  },
+  create: {
+    success: '한 줄 일기가 성공적으로 등록되었습니다. 🌱',
+    fail: '한 줄 일기 등록에 실패했습니다.',
+  },
+}
 
 // 일기 폼 데이터 상태
 const diaryForm = reactive({
@@ -21,8 +41,11 @@ const diaryForm = reactive({
   imageFile: null,
 })
 
-// 이미지 미리보기 URL 상태
+// 이미지 미리보기 URL 상태 (기존 서버 이미지 또는 새로 업로드한 파일 미리보기)
 const imagePreview = ref(null)
+
+// 백엔드 서버 주소 (서버에 이미 저장된 기존 이미지 경로 조합용)
+const BACKEND_URL = 'http://localhost:8081'
 
 // 파일 선택 시 처리 및 미리보기 생성
 const handleFileChange = (event) => {
@@ -52,19 +75,19 @@ const isFutureDate = (dateStr) => {
   return dateStr > todayStr
 }
 
-// 일기 저장 핸들러
+// 일기 저장 함수 (등록/수정 분기 처리)
 const saveDiary = async () => {
-  // 1. 유효성 검사 (입력 체크)
+  // 1. 유효성 검사
   if (!diaryForm.date) {
     return alert('날짜를 선택해주세요')
   }
 
-  // 2. 1차 프론트엔드 유효성 검사 (미래 날짜 차단)
   if (isFutureDate(diaryForm.date)) {
     return alert('미래 날짜에는 일기를 작성할 수 없습니다! 📅')
   }
 
-  if (!diaryForm.imageFile) {
+  // 💡 등록 모드일 때만 이미지 필수 체크 (수정 모드에서는 기존 사진 유지 가능)
+  if (!props.isEditMode && !diaryForm.imageFile) {
     return alert('사진은 반드시 첨부해야 합니다.📸')
   }
 
@@ -75,27 +98,51 @@ const saveDiary = async () => {
   const diaryPayload = {
     content: diaryForm.content,
     diaryDate: diaryForm.date,
-    image: diaryForm.imageFile,
+    image: diaryForm.imageFile, // 새 파일이 없으면 null이 들어가고 백엔드에서 기존 이미지 유지 처리
   }
 
-  // 3. composable의 API 호출 응답 객체 처리 ({ success, message })
-  const result = await createDiary(diaryPayload)
+  let result = { success: false, message: '' }
+  const modeKey = props.isEditMode ? 'edit' : 'create'
+
+  // ✏️ 모드에 따라 API 분기 태우기
+  if (props.isEditMode) {
+    const diaryId = props.diaryData?.diaryId
+    result = await updateDiary(diaryId, diaryPayload)
+  } else {
+    result = await createDiary(diaryPayload)
+  }
 
   if (result.success) {
-    alert('한 줄 일기가 성공적으로 등록되었습니다. 🌿')
+    alert(MODAL_TEXTS[modeKey].success)
     emit('saved', diaryForm.date)
     emit('close')
   } else {
-    // 백엔드에서 넘어온 상세 에러 메시지(예: "미래 날짜에는 일기를 작성할 수 없습니다.") 표시
-    alert(result.message || '한 줄 일기 등록에 실패했습니다. 다시 시도해주세요.')
+    alert(result.message || MODAL_TEXTS[modeKey].fail)
   }
 }
+
+// 💡 수정 모드일 때 기존 데이터 바인딩
+onMounted(() => {
+  if (props.isEditMode && props.diaryData) {
+    const data = props.diaryData
+
+    diaryForm.date = data.diaryDate || props.initialDate
+    diaryForm.content = data.content || ''
+
+    // 기존에 등록된 이미지가 있다면 미리보기 창에 띄워주기
+    if (data.imagePath) {
+      imagePreview.value = data.imagePath.startsWith('http')
+        ? data.imagePath
+        : `${BACKEND_URL}${data.imagePath}`
+    }
+  }
+})
 </script>
 
 <template>
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
-      <h3>새 한 줄 일기 등록 📖</h3>
+      <h3>{{ isEditMode ? '한 줄 일기 수정하기' : '새 한 줄 일기 등록 📖' }}</h3>
 
       <!-- 날짜 선택 섹션 -->
       <div class="form-group">
@@ -138,7 +185,7 @@ const saveDiary = async () => {
 
       <!-- 모달 버튼 -->
       <div class="modal-buttons">
-        <button class="modal-button primary" @click="saveDiary">등록</button>
+        <button class="modal-button primary" @click="saveDiary">{{ isEditMode ? '수정완료' : '등록'}}</button>
         <button class="modal-button" @click="$emit('close')">취소</button>
       </div>
     </div>

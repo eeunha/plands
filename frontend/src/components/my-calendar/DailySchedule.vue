@@ -71,10 +71,10 @@ const clickDeletedTodo = (todoId) => {
 <style scoped>
 .daily-schedule {
   padding: 20px;
-  border: 1px solid #eee;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   min-height: 458px;
   overflow-y: auto;
@@ -109,6 +109,26 @@ li {
   padding: 12px 15px;
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+li.schedule-item {
+  background-color: #ffffff;
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border-radius: 6px;
+
+  /* 🌟 수정 포인트: 뚜렷한 테두리와 은은한 그림자 추가 */
+  border: 1px solid #edf2f7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  /* 마우스가 올라갔을 때 살짝 떠오르는 입체감 효과 (선택사항) */
+  transition: all 0.2s ease;
+}
+
+/* 마우스 호버 시 살짝 강조되는 효과 */
+li.schedule-item:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 /* 💡 타이틀과 쓰레기통을 양끝으로 밀어버리기 위한 가로 정렬용 */

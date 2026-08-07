@@ -126,9 +126,10 @@ const clickDeleteDiary = (diaryId) => {
   height: 100%;
   min-height: 456px;
   background-color: #ffffff;
-  border-radius: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .diary-date-title {
@@ -204,7 +205,8 @@ const clickDeleteDiary = (diaryId) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px; /* 사진 주변에 여유 공간(패딩)을 줘서 더 깔끔해 보이게 함 */
+  padding: 16px 20px; /* 👈 좌우 패딩을 상하보다 조금 더 주거나 넉넉하게 조절해 보세요 */
+  box-sizing: border-box; /* 패딩 포함해서 크기 계산되도록 안전장치! */
 }
 
 .diary-image-wrapper img {

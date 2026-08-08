@@ -120,7 +120,7 @@ public class DiaryServiceImpl implements DiaryService {
     public void modifyDiary(DiaryUpdateRequestDto diaryDto) {
         log.info("====== 한 줄 일기 수정 서비스 레이어 진입 (diaryId: {}) ======", diaryDto.getDiaryId());
 
-        // 필수 값 누락 방어
+        // 0. 필수 값 누락 방어
         if (diaryDto.getDiaryId() == null) {
             throw new IllegalArgumentException("수정할 일기 ID가 누락되었습니다.");
         }
@@ -132,42 +132,52 @@ public class DiaryServiceImpl implements DiaryService {
         Long curMemberId = diaryDto.getMemberId();
 
         // ----------------------------------------------------
-        // Step 1: 수정 대상 데이터 사전 조회 (기존 사진 경로 파악용)
+        // 1. 수정하려는 일기가 존재하는가?
         // ----------------------------------------------------
         DiaryDeleteTargetDto target = diaryMapper.selectDeleteTargetById(diaryId);
 
-        // 1-1. 일기 존재 여부 확인
         if (target == null) {
             throw new IllegalArgumentException("존재하지 않거나 이미 삭제된 한 줄 일기입니다. ID: " + diaryId);
         }
 
-        // 1-2. 본인 글인지 권한 검증 (Security UserDetails에서 온 ID 비교)
+        // ----------------------------------------------------
+        // 2. 수정하려는 사람과 일기 작성자가 동일한가? (권한 검증)
+        // ----------------------------------------------------
         if (!target.getMemberId().equals(curMemberId)) {
             throw new SecurityException("해당 한 줄 일기를 수정할 권한이 없습니다.");
         }
 
         // ----------------------------------------------------
-        // Step 2: 이미지 파일 처리
+        // 3. 바뀐 대상에 따른 검증 및 처리
         // ----------------------------------------------------
+
+        // 3.1. 날짜가 변경된 경우 -> 이미 작성된 일자인지 중복 검사
+        LocalDate newDiaryDate = diaryDto.getDiaryDate();
+        LocalDate existingDate = target.getDiaryDate();
+
+        if (newDiaryDate != null) {
+            if (!newDiaryDate.equals(existingDate)) {
+                boolean exists = diaryMapper.existsByMemberIdAndDiaryDate(curMemberId, newDiaryDate);
+                if (exists) {
+                    throw new IllegalArgumentException("이미 해당 날짜에 작성된 일기가 존재합니다.");
+                }
+            }
+        }
+
+        // 3.2. 사진이 새로 업로드 된 경우 -> 기존 사진 로컬 제거 후 새 사진 저장 및 경로 세팅
         MultipartFile newImage = diaryDto.getImage();
-
-        // 새로운 사진으로 수정 시
         if (newImage != null && !newImage.isEmpty()) {
-            // 1. 새 파일 로컬 저장
+            // 새 파일 로컬 저장
             String imagePath = saveFileToLocal(newImage);
-
-            // 2. DTO에 새 경로 세팅 (XML의 <if>에 걸려서 이 경로로 업데이트됨)
             diaryDto.setImagePath(imagePath);
 
-            // 3. 서버에 남아있던 기존(옛날) 사진 물리 삭제
+            // 서버에 남아있던 기존(옛날) 사진 물리 삭제
             if (target.getImagePath() != null && !target.getImagePath().isBlank()) {
                 deleteLocalFile(target.getImagePath());
             }
         }
 
-        // ----------------------------------------------------
-        // Step 3: DB 업데이트 수행
-        // ----------------------------------------------------
+        // 3.3. 글(내용) 및 기타 항목 수정 포함하여 DB 업데이트 수행
         int updatedRows = diaryMapper.updateDiary(diaryDto);
 
         if (updatedRows != 1) {

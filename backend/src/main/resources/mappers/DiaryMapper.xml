@@ -77,7 +77,8 @@
         SELECT
             diary_id,
             member_id,
-            image_path
+            image_path,
+            diary_date
         FROM diary
         WHERE diary_id = #{diaryId}
     </select>

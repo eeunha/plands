@@ -151,11 +151,17 @@ public class DiaryServiceImpl implements DiaryService {
         // 3. 바뀐 대상에 따른 검증 및 처리
         // ----------------------------------------------------
 
-        // 3.1. 날짜가 변경된 경우 -> 이미 작성된 일자인지 중복 검사
+        // 3.1. 날짜가 변경된 경우 -> 이미 작성된 일자인지 중복 검사 + 미래 날짜 검증
         LocalDate newDiaryDate = diaryDto.getDiaryDate();
         LocalDate existingDate = target.getDiaryDate();
 
         if (newDiaryDate != null) {
+            // 1) 미래 날짜 검증
+            if (newDiaryDate.isAfter(LocalDate.now())) {
+                throw new IllegalArgumentException("미래 날짜로 일기를 수정할 수 없습니다.");
+            }
+
+            // 2) 날짜 중복 검사
             if (!newDiaryDate.equals(existingDate)) {
                 boolean exists = diaryMapper.existsByMemberIdAndDiaryDate(curMemberId, newDiaryDate);
                 if (exists) {
@@ -187,7 +193,6 @@ public class DiaryServiceImpl implements DiaryService {
         log.info("====== 한 줄 일기 수정 완료 (diaryId: {}) ======", diaryId);
     }
 
-
     /**
      * 작성한 한 줄 일기를 삭제하고, 첨부된 이미지 파일을 서버 로컬에서 물리 삭제합니다.
      *
@@ -203,7 +208,7 @@ public class DiaryServiceImpl implements DiaryService {
         log.info("====== 한 줄 일기 삭제 서비스 레이어 진입 (diaryId: {}) ======", diaryId);
 
         // ----------------------------------------------------
-        // Step 1: 수정 대상 데이터 사전 조회
+        // Step 1: 삭제 대상 데이터 사전 조회
         // ----------------------------------------------------
         DiaryDeleteTargetDto target = diaryMapper.selectDeleteTargetById(diaryId);
 
@@ -320,5 +325,4 @@ public class DiaryServiceImpl implements DiaryService {
             throw new RuntimeException("🚨 이미지 파일 저장에 실패했습니다.", e);
         }
     }
-
 }

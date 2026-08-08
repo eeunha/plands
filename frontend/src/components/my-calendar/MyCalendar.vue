@@ -13,6 +13,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  diaries: {
+    type: Array,
+    default: () => [],
+  },
   loading: {
     type: Boolean,
     default: false,
@@ -86,6 +90,37 @@ const calendarOptions = reactive({
     return []
   },
 
+  // 달력 날짜 셀 내부의 콘텐츠를 커스텀하는 훅
+  dayCellContent: (arg) => {
+    const cellOffset = arg.date.getTimezoneOffset() * 60000
+    const cellDateStr = new Date(arg.date.getTime() - cellOffset).toISOString().split('T')[0]
+
+    // 해당 날짜에 일기가 있는지 확인
+    const hasDiary = props.diaries?.some((diary) => diary.diaryDate === cellDateStr)
+
+    // 기본으로 표시되는 날짜 숫자 (예: "25" -> "25일" 등에서 숫자만 추출)
+    const dayNumber = arg.dayNumberText
+
+    if (hasDiary) {
+      // 일기가 있으면 마커와 숫자를 함께 반환
+      return {
+        html: `<div class="day-cell-content-wrapper">
+                 <span class="diary-marker-icon">🌿</span>
+                 <span class="day-num">${dayNumber}</span>
+               </div>`,
+      }
+    }
+
+    // 일기가 없으면 그냥 기본 숫자 반환
+    // 일기가 없어도 똑같이 wrapper를 씌워주어 날짜 위치(우측 정렬)를 완벽하게 통일시킵니다!
+    return {
+      html: `<div class="day-cell-content-wrapper">
+               <span class="diary-marker-icon"></span>
+               <span class="day-num">${dayNumber}</span>
+             </div>`,
+    }
+  },
+
   // 달력이 처음 켜지거나, 유저가 [이전달]/[다음달] 버튼을 누를 때마다 자동 실행!
   datesSet: (info) => {
     // 1) FullCalendar가 계산한 화면상의 전체 시작일과 종료일 (ex: 5월 31일 ~ 7월 12일)
@@ -153,6 +188,17 @@ watch(
   { deep: true },
 )
 
+watch(
+  () => props.diaries,
+  () => {
+    if (fullCalendarRef.value) {
+      const calendarApi = fullCalendarRef.value.getApi()
+      calendarApi.render()
+    }
+  },
+  { deep: true },
+)
+
 // 2. 부모가 넘겨준 선택 날짜가 바뀔 때마다 달력 눈금 강제 새로고침(리렌더링)하기!
 watch(
   () => props.selectedDate,
@@ -207,9 +253,8 @@ watch(
   margin-bottom: 10px;
 }
 
-/* [★ 스타일 추가] 선택된 날짜 칸의 배경색을 연한 에메랄드(화이트 톤)로 지정 */
 :deep(.fc-daygrid-day.selected-date) {
-  background-color: #e6f4ea !important; /* 은하의 시그니처 연한 에메랄드 */
+  background-color: #e6f4ea !important;
   transition: background-color 0.2s ease;
 }
 
@@ -220,6 +265,28 @@ watch(
 
 /* 달력의 각 날짜 칸이 할 일이 없어도 최소 이만큼의 높이를 유지하도록 설정 */
 :deep(.fc-daygrid-day-frame) {
-  min-height: 85px; /* 이 수치를 90px ~ 100px 사이로 조절하면서 은하 마음에 드는 높이를 찾아봐! */
+  min-height: 85px;
+}
+
+/* 날짜 셀 내부 래퍼 스타일 (가로 정렬로 변경) */
+:deep(.day-cell-content-wrapper) {
+  display: flex;
+  flex-direction: row; /* 👈 세로에서 가로 방향으로 변경 */
+  justify-content: space-between; /* 👈 좌우 끝으로 밀어주기 (왼쪽: 아이콘, 오른쪽: 숫자) */
+  align-items: center;
+  width: 100%;
+  padding: 2px 4px; /* 살짝의 여백 추가 */
+}
+
+/* 아이콘 스타일 */
+:deep(.diary-marker-icon) {
+  font-size: 14px;
+  line-height: 1;
+  margin-right: 12px;
+}
+
+/* 날짜 숫자 스타일 */
+:deep(.day-num) {
+  font-size: 15px;
 }
 </style>

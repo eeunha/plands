@@ -216,6 +216,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
       <div class="calendar-section">
         <MyCalendar
           :events="allEvents"
+          :diaries="allDiaries"
           :selected-date="selectedDate"
           @date-selected="handleDateSelected"
           @events-loaded="handleEventsLoaded"

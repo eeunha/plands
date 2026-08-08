@@ -22,8 +22,8 @@ export function useCalendarApi() {
     allDiaries.value = []
   }
 
-  // 캘린더 전체 할 일 조회 함수 (GET)
-  const fetchCalendarList = async ({ startDate, endDate }) => {
+  // 할 일 목록 조회(한 달) 함수 (GET)
+  const fetchTodoList = async ({ startDate, endDate }) => {
     loading.value = true
     error.value = null
     try {
@@ -242,7 +242,7 @@ export function useCalendarApi() {
     resetCalendarState,
 
     // 달력 및 Todo 관련 액션
-    fetchCalendarList,
+    fetchTodoList,
     getTodoTypes,
     getMemberPlants,
     createTodo,

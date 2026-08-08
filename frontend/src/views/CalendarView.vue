@@ -8,7 +8,7 @@ import { useCalendarApi } from '@/composables/useCalendarApi.js'
 import DiaryFormModal from '@/components/modal/DiaryFormModal.vue'
 
 // 컴포저블 함수에서 상태(allEvents, allDiaries)와 API 호출 함수 가져오기
-const { allEvents, allDiaries, fetchCalendarList, fetchDiaryList, deleteTodo, deleteDiary } =
+const { allEvents, allDiaries, fetchTodoList, fetchDiaryList, deleteTodo, deleteDiary } =
   useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
@@ -67,7 +67,7 @@ const handleEventsLoaded = async ({ startDate, endDate }) => {
 
   // 병렬로 할 일 목록과 일기 목록을 동시에 가져오기
   await Promise.all([
-    fetchCalendarList({ startDate, endDate }),
+    fetchTodoList({ startDate, endDate }),
     fetchDiaryList({ startDate, endDate }),
   ])
 }
@@ -197,7 +197,7 @@ const refreshAllLists = async () => {
 
   if (startDate && endDate) {
     await Promise.all([
-      fetchCalendarList({ startDate, endDate }),
+      fetchTodoList({ startDate, endDate }),
       fetchDiaryList({ startDate, endDate }),
     ])
   } else {

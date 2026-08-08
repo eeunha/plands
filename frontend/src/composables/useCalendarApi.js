@@ -176,7 +176,7 @@ export function useCalendarApi() {
       error.value = err
 
       // 백엔드에서 던진 예외 메시지 꺼내기 (없을 경우 기본 메시지)
-      const serverMessage = err.response?.data?.error || '한 줄 일기 등록에 실패했습니다.'
+      const serverMessage = err.response?.data?.message || '한 줄 일기 등록에 실패했습니다.'
 
       // 실패 시 메시지와 함께 객체 반환
       return { success: false, message: serverMessage }
@@ -207,10 +207,7 @@ export function useCalendarApi() {
       return { success: true }
     } catch (err) {
       error.value = err
-
-      // 백엔드에서 던진 예외 메시지 꺼내기 (없을 경우 기본 메시지)
-      const serverMessage = err.response?.data?.error || '한 줄 일기 수정에 실패했습니다.'
-
+      const serverMessage = err.response?.data?.message || '한 줄 일기 수정에 실패했습니다.'
       return { success: false, message: serverMessage }
     } finally {
       loading.value = false
@@ -222,12 +219,12 @@ export function useCalendarApi() {
     loading.value = true
     error.value = null
     try {
-      const res = await api.delete(`/api/diary/${diaryId}`)
-      return true
+      await api.delete(`/api/diary/${diaryId}`)
+      return { success: true }
     } catch (err) {
       error.value = err
-      console.error('한 줄 일기 삭제 실패:', err)
-      return false
+      const serverMessage = err.response?.data?.message || '한 줄 일기 삭제에 실패했습니다.'
+      return { success: false, message: serverMessage }
     } finally {
       loading.value = false
     }

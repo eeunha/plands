@@ -66,10 +66,7 @@ const handleEventsLoaded = async ({ startDate, endDate }) => {
   currentPeriod.value = { startDate, endDate }
 
   // 병렬로 할 일 목록과 일기 목록을 동시에 가져오기
-  await Promise.all([
-    fetchTodoList({ startDate, endDate }),
-    fetchDiaryList({ startDate, endDate }),
-  ])
+  await Promise.all([fetchTodoList({ startDate, endDate }), fetchDiaryList({ startDate, endDate })])
 }
 
 const processSavedDate = (savedDateStr) => {
@@ -144,10 +141,13 @@ const handleDiaryUpdated = async (savedDateStr) => {
 
 // 한 줄 일기 삭제 핸들러
 const handleDiaryDelete = async (diaryId) => {
-  const isSuccess = await deleteDiary(diaryId)
+  const result = await deleteDiary(diaryId)
 
-  if (isSuccess) {
+  if (result.success) {
+    alert('일기가 성공적으로 삭제되었습니다. 🌿')
     await refreshAllLists()
+  } else {
+    alert(result.message)
   }
 }
 

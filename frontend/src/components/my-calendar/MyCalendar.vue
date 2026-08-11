@@ -120,7 +120,7 @@ const calendarOptions = computed(() => ({
 
   // 달력이 처음 켜지거나, 유저가 [이전달]/[다음달] 버튼을 누를 때마다 자동 실행!
   datesSet: (info) => {
-    // 1) FullCalendar가 계산한 화면상의 전체 시작일과 종료일 (ex: 5월 31일 ~ 7월 12일)
+    // FullCalendar가 계산한 화면상의 전체 시작일과 종료일 (ex: 5월 31일 ~ 7월 12일)
     // 화면 범위 계산 및 백엔드 데이터 조회 요청 (기존 동일)
     const startDate = info.startStr.split('T')[0]
     const endDate = info.endStr.split('T')[0]
@@ -128,16 +128,21 @@ const calendarOptions = computed(() => ({
     // 부모(CalendarView)에게 "이 기간만큼 백엔드에서 데이터 조회해와!" 하고 신호 보냄
     emit('events-loaded', { startDate, endDate })
 
-    // 2) 달력이 보여주는 '진짜 현재 월의 1일' 정보
-    // info.view.currentStart는 FullCalendar가 인지하는 '진짜 현재 월의 1일' (Date 객체)이야.
+    // 달력이 보여주는 '진짜 현재 월의 1일' 정보
+    // info.view.currentStart는 FullCalendar가 인지하는 '진짜 현재 월의 1일' (Date 객체)
     const currentMonthFirstDay = info.view.currentStart
 
-    // 3) 진짜 실제 오늘(Today)의 날짜 정보 가져오기
+    // 진짜 실제 오늘(Today)의 날짜 정보 가져오기
     const realToday = new Date()
 
-    // 부모가 들고 있는 날짜의 '월'과 달력이 새로 보여주는 '월'이 다를 때만 작동 (월 이동 감지)
-    if (props.selectedDate.getMonth() !== currentMonthFirstDay.getMonth()) {
-      // [★ 핵심 예외 처리] 이동한 달이 '진짜 오늘'과 같은 년도, 같은 월인지 비교!
+    // 1) 현재 달력에 보이는 월과 부모가 선택한 월이 같은지 비교
+    const isSameYearMonth =
+      props.selectedDate.getFullYear() === currentMonthFirstDay.getFullYear() &&
+      props.selectedDate.getMonth() === currentMonthFirstDay.getMonth()
+
+    // 2) 만약 다른 달로 넘어갔다면? (월 이동 감지)
+    if (!isSameYearMonth) {
+      // 이동한 달이 '진짜 오늘'이 속한 년/월과 같다면 -> 오늘 날짜 선택!
       if (
         realToday.getFullYear() === currentMonthFirstDay.getFullYear() &&
         realToday.getMonth() === currentMonthFirstDay.getMonth()
@@ -145,6 +150,7 @@ const calendarOptions = computed(() => ({
         // 이동한 달이 이번 달(6월)이라면? 1일이 아니라 '진짜 오늘 날짜'를 선택!
         emit('date-selected', formatDateToString(realToday))
       } else {
+        // 아니면 해당 월의 1일 선택!
         emit('date-selected', formatDateToString(currentMonthFirstDay))
       }
     }

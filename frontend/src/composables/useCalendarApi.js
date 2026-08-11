@@ -121,11 +121,11 @@ export function useCalendarApi() {
     error.value = null
     try {
       const res = await api.delete(`/api/todo/${todoId}`)
-      return true
+      return { success: true }
     } catch (err) {
       error.value = err
-      console.error('할 일 삭제 실패:', err)
-      return false
+      const serverMessage = err.response?.data?.message || '할 일 삭제에 실패했습니다.'
+      return { success: false, message: serverMessage }
     } finally {
       loading.value = false
     }

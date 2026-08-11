@@ -105,13 +105,13 @@ const handleTodoEdit = (eventObj) => {
 
 // 할 일 삭제 핸들러
 const handleTodoDelete = async (todoId) => {
-  const isSuccess = await deleteTodo(todoId)
+  const result = await deleteTodo(todoId)
 
-  if (isSuccess) {
+  if (result.success) {
     alert('할 일이 성공적으로 삭제되었습니다. 🌿')
     await refreshAllLists()
   } else {
-    alert('할 일 삭제에 실패했습니다.')
+    alert(result.message)
   }
 }
 

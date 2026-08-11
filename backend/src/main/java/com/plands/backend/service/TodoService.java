@@ -17,7 +17,7 @@ public interface TodoService {
     List<MemberPlantResponseDto> findMemberPlantList(Long memberId);
 
     // 할 일 삭제 비즈니스 로직 (Soft Delete)
-    void removeTodo(Long todoId);
+    void removeTodo(Long todoId, Long memberId);
 
     // 할 일 수정
     void modifyTodo(Long todoId, TodoRequestDto todoRequestDto);

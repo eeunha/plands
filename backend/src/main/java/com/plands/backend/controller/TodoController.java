@@ -100,12 +100,14 @@ public class TodoController {
 
     // 할 일 삭제 API (Soft Delete)
     @DeleteMapping("/{todoId}")
-    public ResponseEntity<String> deleteTodo(@PathVariable Long todoId) {
+    public ResponseEntity<Void> deleteTodo(@PathVariable Long todoId, @AuthenticationPrincipal UserDetails userDetails) {
         log.info("====== 할 일 삭제 컨트롤러 진입 ======");
         log.debug("프론트에서 넘어온 삭제 대상 ID: {}", todoId);
 
-        todoService.removeTodo(todoId);
+        Long memberId = getAuthenticatedMemberId(userDetails);
 
-        return ResponseEntity.ok("할 일이 성공적으로 삭제되었습니다.");
+        todoService.removeTodo(todoId, memberId);
+
+        return ResponseEntity.ok().build();
     }
 }

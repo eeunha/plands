@@ -86,14 +86,12 @@ public class DiaryServiceTest {
         );
 
         DiaryUpdateRequestDto updateDto = new DiaryUpdateRequestDto();
-        updateDto.setDiaryId(diaryId);
-        updateDto.setMemberId(memberId);
         updateDto.setContent("이미지만 바꿀래요"); // 텍스트는 유지하거나 변경
         updateDto.setDiaryDate(today);
         updateDto.setImage(newImage); //새 이미지 주입
 
         // when: 3. 수정 서비스 호출
-        diaryService.modifyDiary(updateDto);
+        diaryService.modifyDiary(diaryId, memberId, updateDto);
 
         // then: 4. 수정 후 이미지 경로가 기존과 달라졌는지(새로 잘 교체되었는지) 검증
         List<DiaryResponseDto> updatedList = diaryService.findDiaryList(memberId, today.toString(), today.toString());

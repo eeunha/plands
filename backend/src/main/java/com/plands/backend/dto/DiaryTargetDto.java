@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class DiaryDeleteTargetDto {
+public class DiaryTargetDto {
     private Long diaryId;
     private Long memberId;       // 작성자 검증용
     private String imagePath;    // 로컬 파일 경로 (예: "/uploads/diary/abcd-123.jpg")

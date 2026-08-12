@@ -85,10 +85,7 @@ public class DiaryController {
 
         Long memberId = getAuthenticatedMemberId(userDetails);
 
-        requestDto.setDiaryId(diaryId);
-        requestDto.setMemberId(memberId);
-
-        diaryService.modifyDiary(requestDto);
+        diaryService.modifyDiary(diaryId, memberId, requestDto);
 
         return ResponseEntity.ok().build();
     }

@@ -55,14 +55,14 @@
     <update id="updateDiary" parameterType="com.plands.backend.dto.request.DiaryUpdateRequestDto">
         UPDATE diary
         <set>
-            <if test="imagePath != null and imagePath != ''">
-                image_path = #{imagePath},
+            <if test="finalImagePath != null and finalImagePath != ''">
+                image_path = #{finalImagePath},
             </if>
-            <if test="content != null and content != ''">
-                content = #{content},
+            <if test="dto.content != null and dto.content != ''">
+                content = #{dto.content},
             </if>
-            <if test="diaryDate != null">
-                diary_date = #{diaryDate},
+            <if test="dto.diaryDate != null">
+                diary_date = #{dto.diaryDate},
             </if>
         </set>
         WHERE diary_id = #{diaryId}
@@ -72,8 +72,8 @@
     <!-- ================================================================= -->
     <!-- [삭제 - Delete] -->
     <!-- ================================================================= -->
-    <!-- 한 줄 일기 삭제 전 조회 -->
-    <select id="selectDeleteTargetById" resultType="com.plands.backend.dto.DiaryDeleteTargetDto">
+    <!-- 한 줄 일기 수정/삭제 전 조회 -->
+    <select id="selectTargetById" resultType="com.plands.backend.dto.DiaryTargetDto">
         SELECT
             diary_id,
             member_id,

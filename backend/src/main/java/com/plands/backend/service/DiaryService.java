@@ -12,7 +12,7 @@ public interface DiaryService {
 
     List<DiaryResponseDto> findDiaryList(Long memberId, String startDate, String endDate);
 
-    void modifyDiary(DiaryUpdateRequestDto diaryDto);
+    void modifyDiary(Long diaryId, Long memberId, DiaryUpdateRequestDto diaryDto);
 
     void deleteDiary(Long diaryId, Long curUserId);
 }

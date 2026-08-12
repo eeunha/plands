@@ -1,6 +1,6 @@
 package com.plands.backend.service;
 
-import com.plands.backend.dto.DiaryDeleteTargetDto;
+import com.plands.backend.dto.DiaryTargetDto;
 import com.plands.backend.dto.DiaryDto;
 import com.plands.backend.dto.request.DiaryCreateRequestDto;
 import com.plands.backend.dto.request.DiaryUpdateRequestDto;
@@ -117,24 +117,21 @@ public class DiaryServiceImpl implements DiaryService {
      */
     @Override
     @Transactional
-    public void modifyDiary(DiaryUpdateRequestDto diaryDto) {
-        log.info("====== 한 줄 일기 수정 서비스 레이어 진입 (diaryId: {}) ======", diaryDto.getDiaryId());
+    public void modifyDiary(Long diaryId, Long memberId, DiaryUpdateRequestDto diaryDto) {
+        log.info("====== 한 줄 일기 수정 서비스 레이어 진입 (diaryId: {}) ======", diaryId);
 
-        // 0. 필수 값 누락 방어
-        if (diaryDto.getDiaryId() == null) {
-            throw new IllegalArgumentException("수정할 일기 ID가 누락되었습니다.");
-        }
-        if (diaryDto.getMemberId() == null) {
-            throw new IllegalArgumentException("회원 정보가 누락되었습니다.");
-        }
-
-        Long diaryId = diaryDto.getDiaryId();
-        Long curMemberId = diaryDto.getMemberId();
+//        // 0. 필수 값 누락 방어
+//        if (diaryId == null) {
+//            throw new IllegalArgumentException("수정할 일기 ID가 누락되었습니다.");
+//        }
+//        if (memberId == null) {
+//            throw new IllegalArgumentException("회원 정보가 누락되었습니다.");
+//        }
 
         // ----------------------------------------------------
         // 1. 수정하려는 일기가 존재하는가?
         // ----------------------------------------------------
-        DiaryDeleteTargetDto target = diaryMapper.selectDeleteTargetById(diaryId);
+        DiaryTargetDto target = diaryMapper.selectTargetById(diaryId);
 
         if (target == null) {
             throw new IllegalArgumentException("존재하지 않거나 이미 삭제된 한 줄 일기입니다. ID: " + diaryId);
@@ -143,7 +140,7 @@ public class DiaryServiceImpl implements DiaryService {
         // ----------------------------------------------------
         // 2. 수정하려는 사람과 일기 작성자가 동일한가? (권한 검증)
         // ----------------------------------------------------
-        if (!target.getMemberId().equals(curMemberId)) {
+        if (!target.getMemberId().equals(memberId)) {
             throw new SecurityException("해당 한 줄 일기를 수정할 권한이 없습니다.");
         }
 
@@ -163,7 +160,7 @@ public class DiaryServiceImpl implements DiaryService {
 
             // 2) 날짜 중복 검사
             if (!newDiaryDate.equals(existingDate)) {
-                boolean exists = diaryMapper.existsByMemberIdAndDiaryDate(curMemberId, newDiaryDate);
+                boolean exists = diaryMapper.existsByMemberIdAndDiaryDate(memberId, newDiaryDate);
                 if (exists) {
                     throw new IllegalArgumentException("이미 해당 날짜에 작성된 일기가 존재합니다.");
                 }
@@ -171,11 +168,12 @@ public class DiaryServiceImpl implements DiaryService {
         }
 
         // 3.2. 사진이 새로 업로드 된 경우 -> 기존 사진 로컬 제거 후 새 사진 저장 및 경로 세팅
+        String finalImagePath = target.getImagePath(); // 기존은 이미지 유지
+
         MultipartFile newImage = diaryDto.getImage();
         if (newImage != null && !newImage.isEmpty()) {
             // 새 파일 로컬 저장
-            String imagePath = saveFileToLocal(newImage);
-            diaryDto.setImagePath(imagePath);
+            finalImagePath = saveFileToLocal(newImage);
 
             // 서버에 남아있던 기존(옛날) 사진 물리 삭제
             if (target.getImagePath() != null && !target.getImagePath().isBlank()) {
@@ -184,7 +182,7 @@ public class DiaryServiceImpl implements DiaryService {
         }
 
         // 3.3. 글(내용) 및 기타 항목 수정 포함하여 DB 업데이트 수행
-        int updatedRows = diaryMapper.updateDiary(diaryDto);
+        int updatedRows = diaryMapper.updateDiary(diaryId, memberId, diaryDto, finalImagePath);
 
         if (updatedRows != 1) {
             throw new IllegalStateException("한 줄 일기 수정 처리에 실패했습니다.");
@@ -210,10 +208,11 @@ public class DiaryServiceImpl implements DiaryService {
         // ----------------------------------------------------
         // Step 1: 삭제 대상 데이터 사전 조회
         // ----------------------------------------------------
-        DiaryDeleteTargetDto target = diaryMapper.selectDeleteTargetById(diaryId);
+        DiaryTargetDto target = diaryMapper.selectTargetById(diaryId);
 
         // 1-1. 일기 존재 여부 확인
         if (target == null) {
+            log.warn("삭제 실패: 존재하지 않는 한 줄 일기 ID = {}", diaryId);
             throw new IllegalArgumentException("존재하지 않거나 이미 삭제된 일기입니다. ID: " + diaryId);
         }
 

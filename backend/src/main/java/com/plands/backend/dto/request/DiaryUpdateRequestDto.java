@@ -14,8 +14,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiaryUpdateRequestDto {
-    private Long diaryId;
-    private Long memberId;
 
     private String content;
 
@@ -23,6 +21,4 @@ public class DiaryUpdateRequestDto {
     private LocalDate diaryDate;
 
     private MultipartFile image; // 새로 업로드할 실제 이미지 파일
-
-    private String imagePath;    // 서비스에서 로컬 저장 후 세팅할 DB 저장용 경로
 }

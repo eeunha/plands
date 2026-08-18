@@ -53,6 +53,7 @@
         SELECT
             t.todo_id,
             t.due_date,
+            t.is_done,
             tt.todo_type_id,
             tt.name AS todo_type_name,
             tt.color_code,

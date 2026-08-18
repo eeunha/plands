@@ -13,6 +13,7 @@ public class CalendarResponseDto {
     private Long id;            // 할 일 고유 번호
     private String title;       // 할 일 종류 이름 (ex: 물주기, 분갈이)
     private String start;       // 할 일 날짜 (due_date)
+    private Boolean isDone;     // 완료 여부
     private String color;       // 카테고리 색상 코드
     private Long todoTypeId;    // 할 일 종류 고유 번호
 

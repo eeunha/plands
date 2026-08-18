@@ -13,6 +13,8 @@
         <result property="color" column="color_code"/>
         <result property="todoTypeId" column="todo_type_id"/>
 
+        <result property="isDone" column="is_done"/>
+
         <collection property="plants" ofType="com.plands.backend.dto.response.PlantInfoDto">
             <result property="memberPlantId" column="member_plant_id"/>
             <result property="plantName" column="plant_name"/>

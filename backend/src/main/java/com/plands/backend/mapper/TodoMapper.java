@@ -37,6 +37,13 @@ public interface TodoMapper {
     // 할 일 마스터 데이터 수정 쿼리 호출용
     int updateTodo(TodoRequestDto todoRequestDto);
 
+    // 할 일 완료 상태 변경
+    int updateTodoStatus(
+            @Param("todoId") Long todoId,
+            @Param("memberId") Long memberId,
+            @Param("isDone") Boolean isDone
+    );
+
     // 할 일 마스터 상태 논리 삭제 (is_deleted = 1로 변경)
     int updateTodoIsDeleted(@Param("todoId") Long todoId);
 

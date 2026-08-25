@@ -66,4 +66,32 @@ public class TodoServiceTest {
         // DTO 필드명이 isDone (혹은 is_done 매핑 방식)에 맞춰 호출해주세요
         assertThat(targetTodo.getIsDone()).isFalse(); // 또는 0 검증
     }
+
+    @Test
+    @DisplayName("할 일 완료 상태 변경 테스트")
+    void changeTodoStatusTest() {
+        // given
+        Long memberId = 1L;
+        Long todoId = 64L;
+        Boolean isDone = true;
+
+        // when & then - 💡 예외가 발생하지 않고 무사히 실행되는지 검증
+        org.assertj.core.api.Assertions.assertThatCode(() ->
+                todoService.modifyTodoStatus(todoId, memberId, isDone)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("권한이 없는 유저가 상태 변경 시 예외 발생")
+    void changeTodoStatus_Forbidden_Test() {
+        // given
+        Long wrongMemberId = 999L; // 존재하지 않는 유저 ID
+        Long todoId = 64L;
+        Boolean isDone = true;
+
+        // when & then - 💡 NoSuchElementException 예외가 정상적으로 터지는지 검증
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                todoService.modifyTodoStatus(todoId, wrongMemberId, isDone)
+        ).isInstanceOf(java.util.NoSuchElementException.class);
+    }
 }

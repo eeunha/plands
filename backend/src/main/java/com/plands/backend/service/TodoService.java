@@ -19,6 +19,9 @@ public interface TodoService {
     // 할 일 수정
     void modifyTodo(Long todoId, TodoRequestDto todoRequestDto);
 
+    // 할 일 완료 상태 변경
+    void modifyTodoStatus(Long todoId, Long memberId, Boolean isDone);
+
     // 할 일 삭제 비즈니스 로직 (Soft Delete)
     void removeTodo(Long todoId, Long memberId);
 }

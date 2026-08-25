@@ -35,7 +35,7 @@ public class TodoServiceTest {
 
         todoRequestDto.setMemberId(memberId);
         todoRequestDto.setTodoTypeId(1L);
-        todoRequestDto.setDueDate("2026-08-08");
+        todoRequestDto.setDueDate("2026-08-18");
 
         List<Long> memberPlantIds = new ArrayList<>();
         memberPlantIds.add(1L);
@@ -51,9 +51,47 @@ public class TodoServiceTest {
         List<CalendarResponseDto> calendarList = calendarService.findCalendarList(memberId, startDate, endDate);
 
         // then: 4. 검증
+        // 1) 2026-08-18 날짜의 할 일이 조회되는지 확인
         boolean hasTodayTodo = calendarList.stream()
-                .anyMatch(calendar -> calendar.getStart().equals("2026-08-08"));
+                .anyMatch(calendar -> calendar.getStart().equals("2026-08-18"));
 
         assertThat(hasTodayTodo).isTrue();
+
+        // 2) 새로 추가한 is_done(또는 isDone) 값이 정상적으로 가져와졌는지(기본값 0/false) 확인
+        CalendarResponseDto targetTodo = calendarList.stream()
+                .filter(calendar -> calendar.getStart().equals("2026-08-18"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("테스트용 할 일을 찾을 수 없습니다."));
+
+        // DTO 필드명이 isDone (혹은 is_done 매핑 방식)에 맞춰 호출해주세요
+        assertThat(targetTodo.getIsDone()).isFalse(); // 또는 0 검증
+    }
+
+    @Test
+    @DisplayName("할 일 완료 상태 변경 테스트")
+    void changeTodoStatusTest() {
+        // given
+        Long memberId = 1L;
+        Long todoId = 64L;
+        Boolean isDone = true;
+
+        // when & then - 💡 예외가 발생하지 않고 무사히 실행되는지 검증
+        org.assertj.core.api.Assertions.assertThatCode(() ->
+                todoService.modifyTodoStatus(todoId, memberId, isDone)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("권한이 없는 유저가 상태 변경 시 예외 발생")
+    void changeTodoStatus_Forbidden_Test() {
+        // given
+        Long wrongMemberId = 999L; // 존재하지 않는 유저 ID
+        Long todoId = 64L;
+        Boolean isDone = true;
+
+        // when & then - 💡 NoSuchElementException 예외가 정상적으로 터지는지 검증
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                todoService.modifyTodoStatus(todoId, wrongMemberId, isDone)
+        ).isInstanceOf(java.util.NoSuchElementException.class);
     }
 }

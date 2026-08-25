@@ -15,11 +15,19 @@ const props = defineProps({
 })
 
 // 💡 부모에게 신호를 보내기 위한 emit 정의
-const emit = defineEmits(['open-register', 'edit-todo', 'delete-todo'])
+const emit = defineEmits(['open-register', 'edit-todo', 'delete-todo', 'toggle-todo'])
 
 const formattedDate = computed(() => {
   return format(props.selectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko })
 })
+
+// 체크박스 클릭 핸들러
+const onToggleTodo = (event, e) => {
+  emit('toggle-todo', {
+    todoId: event.id,
+    isDone: e.target.checked,
+  })
+}
 
 // 수정 버튼 클릭 시 작동 함수
 const clickEditTodo = (eventObj) => {
@@ -46,8 +54,17 @@ const clickDeletedTodo = (todoId) => {
       <li v-for="event in events" :key="event.id" class="schedule-item">
         <div class="item-main-wrapper">
           <div class="item-header">
+            <input
+              type="checkbox"
+              class="todo-checkbox"
+              :checked="event.isDone"
+              @change="onToggleTodo(event, $event)"
+            />
             <span class="color-badge" :style="{ backgroundColor: event.color }"></span>
-            <strong class="event-title">{{ event.title }}</strong>
+
+            <strong class="event-title" :class="{ completed: event.isDone }">
+              {{ event.title }}
+            </strong>
           </div>
 
           <div class="button-group">
@@ -58,7 +75,11 @@ const clickDeletedTodo = (todoId) => {
           </div>
         </div>
 
-        <div v-if="event.plants && event.plants.length > 0" class="plant-list">
+        <div
+          v-if="event.plants && event.plants.length > 0"
+          class="plant-list"
+          :class="{ completed: event.isDone }"
+        >
           <span v-for="(plant, index) in event.plants" :key="index" class="plant-badge">
             🌿 {{ plant.plantName }}
           </span>
@@ -118,7 +139,7 @@ li.schedule-item {
   border-radius: 6px;
 
   /* 🌟 수정 포인트: 뚜렷한 테두리와 은은한 그림자 추가 */
-  border: 1px solid #edf2f7;
+  border: 1px solid #ddd;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
   /* 마우스가 올라갔을 때 살짝 떠오르는 입체감 효과 (선택사항) */
@@ -127,7 +148,7 @@ li.schedule-item {
 
 /* 마우스 호버 시 살짝 강조되는 효과 */
 li.schedule-item:hover {
-  border-color: #cbd5e0;
+  border-color: #b3b3b3;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
@@ -152,9 +173,22 @@ li.schedule-item:hover {
   margin-right: 8px;
 }
 
+.todo-checkbox {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #10b981;
+}
+
 .event-title {
   color: #10b981;
   font-size: 1.1em;
+}
+
+.event-title.completed {
+  text-decoration: line-through;
+  color: #9ca3af !important;
 }
 
 /* style scoped 맨 아래에 예쁜 초록색 마우스오버 효과 추가 */
@@ -214,6 +248,10 @@ li.schedule-item:hover {
 
 .plant-list {
   margin-top: 8px;
+}
+
+.plant-list.completed {
+  opacity: 0.5;
 }
 
 .plant-badge {

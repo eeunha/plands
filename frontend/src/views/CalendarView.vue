@@ -8,8 +8,15 @@ import { useCalendarApi } from '@/composables/useCalendarApi.js'
 import DiaryFormModal from '@/components/modal/DiaryFormModal.vue'
 
 // 컴포저블 함수에서 상태(allEvents, allDiaries)와 API 호출 함수 가져오기
-const { allEvents, allDiaries, fetchTodoList, fetchDiaryList, deleteTodo, deleteDiary } =
-  useCalendarApi()
+const {
+  allEvents,
+  allDiaries,
+  fetchTodoList,
+  fetchDiaryList,
+  changeTodoStatus,
+  deleteTodo,
+  deleteDiary,
+} = useCalendarApi()
 
 // 오른쪽 탭에 보여줄 기준 날짜 (기본값: 오늘)
 const selectedDate = ref(new Date())
@@ -84,6 +91,16 @@ const processSavedDate = (savedDateStr) => {
 
   // 2. 같은 달인지 여부를 반환 (true면 데이터 새로고침 진행, false면 멈춤)
   return isSameMonth
+}
+
+// 할 일 체크박스 클릭 시 실행할 핸들러
+const handleTodoToggle = async ({ todoId, isDone }) => {
+  const isSuccess = await changeTodoStatus(todoId, isDone)
+  if (isSuccess) {
+    await refreshAllLists()
+  } else {
+    alert('할 일 상태 변경에 실패했습니다.')
+  }
 }
 
 // 할 일 등록 및 수정 완료 시 공통 저장 핸들러
@@ -250,6 +267,7 @@ const selectedDateString = computed(() => formatDateStr(selectedDate.value))
             @open-register="isTodoRegisterModalOpen = true"
             @delete-todo="handleTodoDelete"
             @edit-todo="handleTodoEdit"
+            @toggle-todo="handleTodoToggle"
           />
 
           <!-- '일기' 탭 내용 -->

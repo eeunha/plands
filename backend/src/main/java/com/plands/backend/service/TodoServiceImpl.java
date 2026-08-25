@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j // 💡 롬복 로깅 어노테이션 적용
 @Service
@@ -92,8 +93,30 @@ public class TodoServiceImpl implements TodoService {
         log.info("====== 할 일 수정 및 식물 재매핑 완료 ======");
     }
 
+    /**
+     * 할 일 완료 상태 변경
+     */
     @Override
-    @Transactional // 💡 마스터 수정과 매핑 삭제가 한 세트로 묶여야 하므로 트랜잭션 필수!
+    @Transactional
+    public void modifyTodoStatus(Long todoId, Long memberId, Boolean isDone) {
+        log.info("====== 할 일 완료 상태 변경 서비스 진입 ======");
+        log.debug("todoId: {}, memberId: {}, isDone: {}", todoId, memberId, isDone);
+
+        if (isDone == null) {
+            throw new IllegalArgumentException("완료 상태(isDone) 값은 필수입니다.");
+        }
+
+        int affectedRows = todoMapper.updateTodoStatus(todoId, memberId, isDone);
+
+        if (affectedRows == 0) {
+            throw new NoSuchElementException("해당 할 일을 찾을 수 없거나 수정 권한이 없습니다.");
+        }
+
+        log.info("할 일 완료 상태 변경 성공 (todoId: {}, isDone: {})", todoId, isDone);
+    }
+
+    @Override
+    @Transactional
     public void removeTodo(Long todoId, Long memberId) {
         log.info("====== 할 일 삭제 서비스 레이어 진입 (todoId: {}) ======", todoId);
 

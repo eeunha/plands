@@ -1,6 +1,7 @@
 package com.plands.backend.controller;
 
 import com.plands.backend.dto.request.TodoRequestDto;
+import com.plands.backend.dto.request.TodoStatusRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 import com.plands.backend.service.CalendarService;
@@ -96,6 +97,22 @@ public class TodoController {
         todoService.modifyTodo(todoId, todoRequestDto);
 
         return ResponseEntity.ok("할 일이 성공적으로 수정되었습니다.");
+    }
+
+    // 할 일 완료 상태 변경 API
+    @PatchMapping("/{todoId}/status")
+    public ResponseEntity<Void> updateTodoStatus(
+            @PathVariable Long todoId,
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody TodoStatusRequestDto requestDto) {
+        log.info("====== 할 일 완료 상태 변경 컨트롤러 진입 ======");
+        log.debug("상태를 변경할 할 일 ID: {}", todoId);
+
+        Long memberId = getAuthenticatedMemberId(userDetails);
+
+        todoService.modifyTodoStatus(todoId, memberId, requestDto.getIsDone());
+
+        return ResponseEntity.ok().build();
     }
 
     // 할 일 삭제 API (Soft Delete)

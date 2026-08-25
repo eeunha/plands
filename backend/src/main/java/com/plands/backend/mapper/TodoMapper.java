@@ -34,12 +34,19 @@ public interface TodoMapper {
     // 특정 회원의 식물 목록 조회
     List<MemberPlantResponseDto> selectMemberPlants(@Param("memberId") Long memberId); // 매개변수가 하나라 @Param 안써도 됨. 2개이상 시 필수
 
+    // 할 일 마스터 데이터 수정 쿼리 호출용
+    int updateTodo(TodoRequestDto todoRequestDto);
+
+    // 할 일 완료 상태 변경
+    int updateTodoStatus(
+            @Param("todoId") Long todoId,
+            @Param("memberId") Long memberId,
+            @Param("isDone") Boolean isDone
+    );
+
     // 할 일 마스터 상태 논리 삭제 (is_deleted = 1로 변경)
     int updateTodoIsDeleted(@Param("todoId") Long todoId);
 
     // 할 일 매핑 데이터 완전 삭제 (Hard Delete)
     int deleteTodoMemberPlant(@Param("todoId") Long todoId);
-
-    // 할 일 마스터 데이터 수정 쿼리 호출용
-    int updateTodo(TodoRequestDto todoRequestDto);
 }

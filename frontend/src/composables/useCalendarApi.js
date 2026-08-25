@@ -115,6 +115,21 @@ export function useCalendarApi() {
     }
   }
 
+  // 할 일 상태 변경
+  const changeTodoStatus = async (todoId, isDone) => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await api.patch(`/api/todo/${todoId}/status`, { isDone })
+      return true
+    } catch (err) {
+      console.error('할 일 완료 상태 변경 실패', err)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 할 일 삭제 함수 (DELETE) - soft delete도 delete. 행위의 목적!
   const deleteTodo = async (todoId) => {
     loading.value = true
@@ -244,6 +259,7 @@ export function useCalendarApi() {
     getMemberPlants,
     createTodo,
     updateTodo,
+    changeTodoStatus,
     deleteTodo,
 
     // Diary 관련 액션

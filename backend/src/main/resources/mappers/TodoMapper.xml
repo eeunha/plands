@@ -13,6 +13,8 @@
         <result property="color" column="color_code"/>
         <result property="todoTypeId" column="todo_type_id"/>
 
+        <result property="isDone" column="is_done"/>
+
         <collection property="plants" ofType="com.plands.backend.dto.response.PlantInfoDto">
             <result property="memberPlantId" column="member_plant_id"/>
             <result property="plantName" column="plant_name"/>
@@ -53,6 +55,7 @@
         SELECT
             t.todo_id,
             t.due_date,
+            t.is_done,
             tt.todo_type_id,
             tt.name AS todo_type_name,
             tt.color_code,
@@ -124,7 +127,17 @@
             todo_type_id = #{todoTypeId},
             due_date = #{dueDate}
         WHERE todo_id = #{todoId}
-        AND is_deleted = 0
+          AND is_deleted = 0
+    </update>
+
+    <!-- 할 일 완료 상태 변경 -->
+    <update id="updateTodoStatus">
+        UPDATE todo
+        SET
+            is_done = #{isDone}
+        WHERE todo_id = #{todoId}
+          AND member_id = #{memberId}
+          AND is_deleted = 0
     </update>
 
     <!-- ================================================================= -->

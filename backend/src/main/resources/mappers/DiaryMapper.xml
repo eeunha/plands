@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.plands.backend.mapper.DiaryMapper">
+
+    <!-- ================================================================= -->
+    <!-- [생성 - Create] -->
+    <!-- ================================================================= -->
+    <!-- 새 한 줄 일기 생성 -->
+    <insert id="insertDiary" parameterType="com.plands.backend.dto.DiaryDto">
+        INSERT INTO diary (
+            member_id,
+            content,
+            diary_date,
+            image_path
+        ) VALUES (
+            #{memberId},
+            #{content},
+            #{diaryDate},
+            #{imagePath}
+        )
+    </insert>
+
+    <!-- ================================================================= -->
+    <!-- [조회 - Read] -->
+    <!-- ================================================================= -->
+    <!-- 특정 날짜의 일기 존재 여부 확인 -->
+    <select id="existsByMemberIdAndDiaryDate" resultType="boolean">
+    SELECT EXISTS (
+        SELECT 1
+        FROM diary
+        WHERE member_id = #{memberId}
+          AND diary_date = #{diaryDate}
+    )
+    </select>
+
+    <!-- 한 줄 일기 목록 조회 -->
+    <select id="selectDiaryList" resultType="com.plands.backend.dto.response.DiaryResponseDto">
+        SELECT
+            diary_id,
+            member_id,
+            image_path,
+            content,
+            diary_date
+        FROM diary
+        WHERE member_id = #{memberId}
+            AND diary_date >= #{startDate}
+            <![CDATA[ AND diary_date <= #{endDate} ]]>
+    </select>
+
+    <!-- ================================================================= -->
+    <!-- [수정 - Update] -->
+    <!-- ================================================================= -->
+    <!-- 한 줄 일기 수정 -->
+    <update id="updateDiary" parameterType="com.plands.backend.dto.request.DiaryUpdateRequestDto">
+        UPDATE diary
+        <set>
+            <if test="finalImagePath != null and finalImagePath != ''">
+                image_path = #{finalImagePath},
+            </if>
+            <if test="dto.content != null and dto.content != ''">
+                content = #{dto.content},
+            </if>
+            <if test="dto.diaryDate != null">
+                diary_date = #{dto.diaryDate},
+            </if>
+        </set>
+        WHERE diary_id = #{diaryId}
+        AND member_id = #{memberId}
+    </update>
+
+    <!-- ================================================================= -->
+    <!-- [삭제 - Delete] -->
+    <!-- ================================================================= -->
+    <!-- 한 줄 일기 수정/삭제 전 조회 -->
+    <select id="selectTargetById" resultType="com.plands.backend.dto.DiaryTargetDto">
+        SELECT
+            diary_id,
+            member_id,
+            image_path,
+            diary_date
+        FROM diary
+        WHERE diary_id = #{diaryId}
+    </select>
+
+    <!-- 한 줄 일기 하드 삭제 -->
+    <delete id="deleteDiary">
+        DELETE FROM diary
+        WHERE diary_id = #{diaryId}
+    </delete>
+</mapper>

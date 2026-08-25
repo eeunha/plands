@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/stores/authStore.js'
 
 // axios 인스턴스 생성
 const api = axios.create({
@@ -124,10 +125,11 @@ api.interceptors.response.use(
 
 // 로그아웃 처리
 function handleLogout() {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-  console.log('🚪 로그아웃 완료');
-  window.location.href = '/login';
+  const authStore = useAuthStore()
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('refreshToken')
+  authStore.logout() // Pinia 등에서 사용자 상태를 false로 변경
+  console.log('🚪 로그아웃 완료')
 }
 
 export default api;

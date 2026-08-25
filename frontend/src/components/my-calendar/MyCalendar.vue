@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch, defineEmits, ref } from 'vue'
+import { ref, watch, computed } from 'vue'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
@@ -13,11 +13,14 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  diaries: {
+    type: Array,
+    default: () => [],
+  },
   loading: {
     type: Boolean,
     default: false,
   },
-  // [★ 추가] 부모가 기억하고 있는 현재 선택된 날짜 객체와 동기화하기 위해 props 추가!
   selectedDate: {
     type: Date,
     required: true,
@@ -27,7 +30,18 @@ const props = defineProps({
 // FullCalendar 태그에 접근하기 위한 DOM 참조 변수
 const fullCalendarRef = ref(null)
 
-const calendarOptions = reactive({
+// 날짜 비교를 위한 유틸 함수 (UTC/KST 이슈 깔끔하게 정리)
+const formatDateToString = (date) => {
+  const offset = date.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - offset).toISOString().split('T')[0]
+}
+
+// 빠른 조회를 위해 diaries를 Set 자료구조로 변환 (O(1) 시간 복잡도로 성능 최적화)
+const diaryDateSet = computed(() => {
+  return new Set(props.diaries?.map((diary) => diary.diaryDate) || [])
+})
+
+const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, interactionPlugin],
   initialView: 'dayGridMonth',
   weekends: true,
@@ -43,8 +57,7 @@ const calendarOptions = reactive({
   // 딱 3개까지만 화면에 노출하고, 초과되면 아래에 자동으로 "+N개 더" 표시를 띄워줌
   dayMaxEvents: 3,
 
-  // 달력 화면에 그려질 실시간 스티커 리스트
-  events: [],
+  events: props.events, // computed 내부에서 props 직접 참조
 
   // 상단 헤더 버튼 커스텀 (today 버튼 클릭 가로채기)
   headerToolbar: {
@@ -58,11 +71,10 @@ const calendarOptions = reactive({
       click: () => {
         // 1) 달력 라이브러리 자체를 오늘 날짜 화면으로 이동시킴
         const calendarApi = fullCalendarRef.value.getApi()
-        calendarApi.today()
-
-        // 2) 오늘 날짜를 '2026-06-25' 형태로 가공해서 부모 관제탑에 전달 ➡️ 오른쪽 탭도 오늘로 동기화!
-        const todayStr = new Date().toISOString().split('T')[0]
-        emit('date-selected', todayStr)
+        if (calendarApi) {
+          calendarApi.today()
+          emit('date-selected', formatDateToString(new Date()))
+        }
       },
     },
   },
@@ -70,25 +82,45 @@ const calendarOptions = reactive({
   // 달력 칸이 그려질 때마다 실행되면서 특정 클래스를 붙여주는 함수
   dayCellClassNames: (arg) => {
     // 1) 현재 그리고 있는 칸의 날짜 시차 교정 (UTC -> KST)
-    const cellOffset = arg.date.getTimezoneOffset() * 60000
-    const cellDateStr = new Date(arg.date.getTime() - cellOffset).toISOString().split('T')[0]
+    const cellDateStr = formatDateToString(arg.date)
 
     // 2) 부모가 선택해서 들고 있는 날짜 시차 교정 (UTC -> KST)
-    const selectedOffset = props.selectedDate.getTimezoneOffset() * 60000
-    const selectedDateStr = new Date(props.selectedDate.getTime() - selectedOffset)
-      .toISOString()
-      .split('T')[0]
+    const selectedDateStr = formatDateToString(props.selectedDate)
 
-    // 이제 두 문자열이 똑같이 한국 시간 기준으로 비교돼!
-    if (cellDateStr === selectedDateStr) {
-      return ['selected-date']
+    return cellDateStr === selectedDateStr ? ['selected-date'] : []
+  },
+
+  // 달력 날짜 셀 내부의 콘텐츠를 커스텀하는 훅
+  dayCellContent: (arg) => {
+    const cellDateStr = formatDateToString(arg.date)
+
+    // 해당 날짜에 일기가 있는지 확인
+    const hasDiary = diaryDateSet.value.has(cellDateStr)
+
+    // 기본으로 표시되는 날짜 숫자 (예: "25" -> "25일" 등에서 숫자만 추출)
+    const dayNumber = arg.dayNumberText
+
+    const wrapper = document.createElement('div')
+    wrapper.className = 'day-cell-content-wrapper'
+
+    if (hasDiary) {
+      const icon = document.createElement('span')
+      icon.className = 'diary-marker-icon'
+      icon.textContent = '🌿'
+      wrapper.appendChild(icon)
     }
-    return []
+
+    const numSpan = document.createElement('span')
+    numSpan.className = 'day-num'
+    numSpan.textContent = dayNumber
+    wrapper.appendChild(numSpan)
+
+    return { domNodes: [wrapper] }
   },
 
   // 달력이 처음 켜지거나, 유저가 [이전달]/[다음달] 버튼을 누를 때마다 자동 실행!
   datesSet: (info) => {
-    // 1) FullCalendar가 계산한 화면상의 전체 시작일과 종료일 (ex: 5월 31일 ~ 7월 12일)
+    // FullCalendar가 계산한 화면상의 전체 시작일과 종료일 (ex: 5월 31일 ~ 7월 12일)
     // 화면 범위 계산 및 백엔드 데이터 조회 요청 (기존 동일)
     const startDate = info.startStr.split('T')[0]
     const endDate = info.endStr.split('T')[0]
@@ -96,33 +128,30 @@ const calendarOptions = reactive({
     // 부모(CalendarView)에게 "이 기간만큼 백엔드에서 데이터 조회해와!" 하고 신호 보냄
     emit('events-loaded', { startDate, endDate })
 
-    // 2) 달력이 보여주는 '진짜 현재 월의 1일' 정보
-    // info.view.currentStart는 FullCalendar가 인지하는 '진짜 현재 월의 1일' (Date 객체)이야.
+    // 달력이 보여주는 '진짜 현재 월의 1일' 정보
+    // info.view.currentStart는 FullCalendar가 인지하는 '진짜 현재 월의 1일' (Date 객체)
     const currentMonthFirstDay = info.view.currentStart
 
-    // 3) 진짜 실제 오늘(Today)의 날짜 정보 가져오기
+    // 진짜 실제 오늘(Today)의 날짜 정보 가져오기
     const realToday = new Date()
 
-    // 부모가 들고 있는 날짜의 '월'과 달력이 새로 보여주는 '월'이 다를 때만 작동 (월 이동 감지)
-    if (props.selectedDate.getMonth() !== currentMonthFirstDay.getMonth()) {
-      // [★ 핵심 예외 처리] 이동한 달이 '진짜 오늘'과 같은 년도, 같은 월인지 비교!
+    // 1) 현재 달력에 보이는 월과 부모가 선택한 월이 같은지 비교
+    const isSameYearMonth =
+      props.selectedDate.getFullYear() === currentMonthFirstDay.getFullYear() &&
+      props.selectedDate.getMonth() === currentMonthFirstDay.getMonth()
+
+    // 2) 만약 다른 달로 넘어갔다면? (월 이동 감지)
+    if (!isSameYearMonth) {
+      // 이동한 달이 '진짜 오늘'이 속한 년/월과 같다면 -> 오늘 날짜 선택!
       if (
         realToday.getFullYear() === currentMonthFirstDay.getFullYear() &&
         realToday.getMonth() === currentMonthFirstDay.getMonth()
       ) {
         // 이동한 달이 이번 달(6월)이라면? 1일이 아니라 '진짜 오늘 날짜'를 선택!
-        const offset = realToday.getTimezoneOffset() * 60000
-        const todayStr = new Date(realToday.getTime() - offset).toISOString().split('T')[0]
-
-        emit('date-selected', todayStr)
+        emit('date-selected', formatDateToString(realToday))
       } else {
-        // 이동한 달이 완전히 다른 달(5월, 7월 등)이라면? 은하 기획대로 '그 달의 1일'을 선택!
-        const offset = currentMonthFirstDay.getTimezoneOffset() * 60000
-        const firstDayStr = new Date(currentMonthFirstDay.getTime() - offset)
-          .toISOString()
-          .split('T')[0]
-
-        emit('date-selected', firstDayStr)
+        // 아니면 해당 월의 1일 선택!
+        emit('date-selected', formatDateToString(currentMonthFirstDay))
       }
     }
   },
@@ -135,49 +164,40 @@ const calendarOptions = reactive({
 
   // 할 일 스티커(이벤트)를 클릭했을 때도 똑같이 작동하게 만들기!
   eventClick: (info) => {
-    // FullCalendar에서 스티커 클릭 시 제공하는 날짜 문자열 '2026-06-25' 추출
-    const clickedDateStr = info.event.startStr
-
-    // 똑같이 부모에 전달해서 오른쪽 탭을 동기화시킴! 🚀
-    emit('date-selected', clickedDateStr)
+    emit('date-selected', info.event.startStr)
   },
-})
+}))
 
-// 부모가 백엔드에서 데이터를 새로 받아와서 props.events를 바꿔주면,
-// 그걸 실시간으로 감시(watch)해서 달력 화면(calendarOptions.events)에 싹 업데이트 해줌!
+// diaries(일기) 목록이 바뀌면 달력 화면을 강제로 다시 그려서 🌿 마커를 즉시 반영함!
 watch(
-  () => props.events,
-  (newEvents) => {
-    calendarOptions.events = newEvents
+  () => props.diaries,
+  () => {
+    const calendarApi = fullCalendarRef.value?.getApi()
+    if (calendarApi) {
+      calendarApi.render()
+    }
   },
   { deep: true },
 )
 
-// 2. 부모가 넘겨준 선택 날짜가 바뀔 때마다 달력 눈금 강제 새로고침(리렌더링)하기!
+// 선택된 날짜 변경 시그널 처리 (메서드로 분리하여 가독성 향상)
 watch(
   () => props.selectedDate,
   (newDate) => {
-    if (fullCalendarRef.value) {
-      const calendarApi = fullCalendarRef.value.getApi()
-      // FullCalendar 자체 기능을 다시 호출해서 dayCellClassNames를 강제로 재구동시킴!
+    const calendarApi = fullCalendarRef.value?.getApi()
+    if (!calendarApi) return
 
-      // 1) FullCalendar가 인지하는 '진짜 현재 월의 1일' 정보 가져오기
-      const currentStart = calendarApi.view.currentStart
-
-      // 2) [핵심] 만약 부모가 바꾼 날짜의 '연도'나 '월'이 지금 달력 화면과 다르다면?
-      if (
-        newDate.getFullYear() !== currentStart.getFullYear() ||
-        newDate.getMonth() !== currentStart.getMonth()
-      ) {
-        // FullCalendar 화면 자체를 해당 날짜의 월로 강제 이동! (리모컨 작동)
-        calendarApi.gotoDate(newDate)
-      } else {
-        // 3) 같은 달 안에서 날짜만 바뀐 거라면 화면 이동 없이 테두리/배경 눈금만 새로고침!
-        calendarApi.render()
-      }
+    const currentStart = calendarApi.view.currentStart
+    if (
+      newDate.getFullYear() !== currentStart.getFullYear() ||
+      newDate.getMonth() !== currentStart.getMonth()
+    ) {
+      calendarApi.gotoDate(newDate)
+    } else {
+      calendarApi.render()
     }
   },
-  { immediate: true }, // 컴포넌트가 처음 켜질 때도 안전하게 한 번 실행되도록 설정
+  { immediate: true },
 )
 </script>
 
@@ -207,9 +227,8 @@ watch(
   margin-bottom: 10px;
 }
 
-/* [★ 스타일 추가] 선택된 날짜 칸의 배경색을 연한 에메랄드(화이트 톤)로 지정 */
 :deep(.fc-daygrid-day.selected-date) {
-  background-color: #e6f4ea !important; /* 은하의 시그니처 연한 에메랄드 */
+  background-color: #e6f4ea !important;
   transition: background-color 0.2s ease;
 }
 
@@ -218,8 +237,30 @@ watch(
   background-color: #f8fafc !important;
 }
 
-/* 달력의 각 날짜 칸이 일정이 없어도 최소 이만큼의 높이를 유지하도록 설정 */
+/* 달력의 각 날짜 칸이 할 일이 없어도 최소 이만큼의 높이를 유지하도록 설정 */
 :deep(.fc-daygrid-day-frame) {
-  min-height: 85px; /* 이 수치를 90px ~ 100px 사이로 조절하면서 은하 마음에 드는 높이를 찾아봐! */
+  min-height: 85px;
+}
+
+/* 날짜 셀 내부 래퍼 스타일 (가로 정렬로 변경) */
+:deep(.day-cell-content-wrapper) {
+  display: flex;
+  flex-direction: row; /* 👈 세로에서 가로 방향으로 변경 */
+  justify-content: space-between; /* 👈 좌우 끝으로 밀어주기 (왼쪽: 아이콘, 오른쪽: 숫자) */
+  align-items: center;
+  width: 100%;
+  padding: 2px 4px; /* 살짝의 여백 추가 */
+}
+
+/* 아이콘 스타일 */
+:deep(.diary-marker-icon) {
+  font-size: 14px;
+  line-height: 1;
+  margin-right: 12px;
+}
+
+/* 날짜 숫자 스타일 */
+:deep(.day-num) {
+  font-size: 15px;
 }
 </style>

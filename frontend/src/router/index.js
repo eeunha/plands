@@ -11,61 +11,75 @@ import NoticeListView from '@/views/NoticeListView.vue'
 import NoticeDetailView from '@/views/NoticeDetailView.vue'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import CalendarView from '@/views/CalendarView.vue'
+import PlantView from '@/views/PlantView.vue'
+import CommunityView from '@/views/CommunityView.vue'
 
 const publicRoutes = [
   {
     path: '/',
     name: 'home',
     component: HomeView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/login',
     name: 'login',
     component: LoginView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/signup',
     name: 'signup',
     component: SignUpView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/oauth2/redirect',
     name: 'oauth2Redirect',
     component: OAuth2RedirectHandler,
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/mypage',
     name: 'mypage',
     component: MyPageView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default', requiresAuth: true },
   },
   {
     path: '/faq',
     name: 'faq',
     component: FaqView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/notice',
     name: 'noticeList',
     component: NoticeListView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/notice/:id',
     name: 'noticeDetail',
     component: NoticeDetailView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default' },
   },
   {
     path: '/calendar',
     name: 'calendar',
     component: CalendarView,
-    meta: { layout: 'default' }
+    meta: { layout: 'default', requiresAuth: true },
+  },
+  {
+    path: '/community',
+    name: 'community',
+    component: CommunityView,
+    meta: { layout: 'default' },
+  },
+  {
+    path: '/plant',
+    name: 'plant',
+    component: PlantView,
+    meta: { layout: 'default' },
   },
 ]
 
@@ -96,6 +110,21 @@ const router = createRouter({
     ...publicRoutes,
     adminRoutes
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+
+  // 1. 보호받아야 할 경로인가?
+  const requiresAuth = to.meta.requiresAuth
+
+  // 2. 로그인이 필요한데 토큰이 없는가?
+  if (requiresAuth && !authStore.isLoggedIn) {
+    alert('로그인이 필요한 서비스입니다.')
+    next({ name: 'login' }) // 여기서만 로그인으로 보냄
+  } else {
+    next()
+  }
 })
 
 export default router

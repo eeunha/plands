@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
@@ -15,25 +15,11 @@ const props = defineProps({
 })
 
 // 💡 부모에게 신호를 보내기 위한 emit 정의
-const emit = defineEmits(['open-register', 'delete-todo', 'edit-todo'])
-
-// 💡 드롭다운의 열림 상태를 관리하는 반응형 변수
-const isDropdownOpen = ref(false)
+const emit = defineEmits(['open-register', 'edit-todo', 'delete-todo'])
 
 const formattedDate = computed(() => {
   return format(props.selectedDate, 'yyyy년 M월 d일 (EEE)', { locale: ko })
 })
-
-// 등록 버튼 누르면 드롭다운 토글
-const toggleDropdown = () => {
-  isDropdownOpen.value = !isDropdownOpen.value
-}
-
-// 💡 '할 일' 메뉴를 클릭했을 때 실행되는 함수
-const clickRegisterTodo = () => {
-  isDropdownOpen.value = false // 메뉴 닫아주고
-  emit('open-register') // 부모(CalendarView)에게 "모달 열어라!" 하고 신호 발사 🚀
-}
 
 // 수정 버튼 클릭 시 작동 함수
 const clickEditTodo = (eventObj) => {
@@ -52,15 +38,6 @@ const clickDeletedTodo = (todoId) => {
   <div class="daily-schedule">
     <div class="schedule-header">
       <h3>{{ formattedDate }} 할 일</h3>
-
-      <div class="dropdown-container">
-        <button class="btn-register" @click="toggleDropdown">등록</button>
-
-        <div v-if="isDropdownOpen" class="dropdown-menu">
-          <button class="dropdown-item" @click="clickRegisterTodo">할 일</button>
-          <button class="dropdown-item" disabled>일기 (준비중)</button>
-        </div>
-      </div>
     </div>
 
     <p v-if="events.length === 0" class="no-events">{{ formattedDate }}에는 할 일이 없습니다.</p>
@@ -94,12 +71,12 @@ const clickDeletedTodo = (todoId) => {
 <style scoped>
 .daily-schedule {
   padding: 20px;
-  border: 1px solid #eee;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-  min-height: 512px;
+  min-height: 458px;
   overflow-y: auto;
 
   /* 자식 요소들을 세로로 나열하는 flex box로 변환 */
@@ -121,63 +98,6 @@ h3 {
   margin: 0;
 }
 
-.dropdown-container {
-  position: relative;
-  display: inline-block;
-}
-
-.btn-register {
-  background-color: #10b981;
-  color: white;
-  border: none;
-  padding: 6px 16px;
-  font-size: 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
-}
-
-.btn-register:hover {
-  background-color: #059669;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 5px;
-  background-color: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  min-width: 90px;
-  overflow: hidden;
-}
-
-.dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 10px 16px;
-  text-align: center;
-  border: none;
-  background: none;
-  font-size: 14px;
-  color: #374151;
-  cursor: pointer;
-}
-
-.dropdown-item:hover:not(:disabled) {
-  background-color: #f3f4f6;
-  color: #10b981;
-}
-
-.dropdown-item:disabled {
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-
 ul {
   list-style-type: none;
   padding: 0;
@@ -189,6 +109,26 @@ li {
   padding: 12px 15px;
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+li.schedule-item {
+  background-color: #ffffff;
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border-radius: 6px;
+
+  /* 🌟 수정 포인트: 뚜렷한 테두리와 은은한 그림자 추가 */
+  border: 1px solid #edf2f7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  /* 마우스가 올라갔을 때 살짝 떠오르는 입체감 효과 (선택사항) */
+  transition: all 0.2s ease;
+}
+
+/* 마우스 호버 시 살짝 강조되는 효과 */
+li.schedule-item:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 /* 💡 타이틀과 쓰레기통을 양끝으로 밀어버리기 위한 가로 정렬용 */

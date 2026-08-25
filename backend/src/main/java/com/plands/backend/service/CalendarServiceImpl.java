@@ -16,7 +16,7 @@ public class CalendarServiceImpl implements CalendarService {
     private final TodoMapper todoMapper;
 
     @Override
-    public List<CalendarResponseDto> getCalendarList(Long memberId, String startDate, String endDate) {
+    public List<CalendarResponseDto> findCalendarList(Long memberId, String startDate, String endDate) {
         log.info("====== 캘린더 서비스 레이어 DB 호출 ======");
         log.debug("조회 유저 ID: {}, 조회 기간(한 달): {} ~ {}", memberId, startDate, endDate);
 

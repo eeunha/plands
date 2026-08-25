@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function logout() {
 
-    const { clearCalendarCache } = useCalendarApi()
+    const { resetCalendarState } = useCalendarApi()
 
     accessToken.value = null
     refreshToken.value = null
@@ -52,7 +52,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('nickname')
     localStorage.removeItem('role')
 
-    clearCalendarCache()
+    resetCalendarState()
   }
 
   return {

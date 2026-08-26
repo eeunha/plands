@@ -29,13 +29,14 @@ public class TodoServiceTest {
     @DisplayName("할 일 등록 및 조회 통합 테스트")
     void registerAndFindTodoTest() {
         Long memberId = 1L;
+
         LocalDate today = LocalDate.now();
+        String todayStr = today.toString(); // "YYYY-MM-DD"
 
         TodoRequestDto todoRequestDto = new TodoRequestDto();
-
         todoRequestDto.setMemberId(memberId);
         todoRequestDto.setTodoTypeId(1L);
-        todoRequestDto.setDueDate("2026-08-18");
+        todoRequestDto.setDueDate(todayStr);
 
         List<Long> memberPlantIds = new ArrayList<>();
         memberPlantIds.add(1L);
@@ -51,15 +52,15 @@ public class TodoServiceTest {
         List<CalendarResponseDto> calendarList = calendarService.findCalendarList(memberId, startDate, endDate);
 
         // then: 4. 검증
-        // 1) 2026-08-18 날짜의 할 일이 조회되는지 확인
+        // 1) 오늘 날짜(todayStr)의 할 일이 정상적으로 조회되는지 확인
         boolean hasTodayTodo = calendarList.stream()
-                .anyMatch(calendar -> calendar.getStart().equals("2026-08-18"));
+                .anyMatch(calendar -> todayStr.equals(calendar.getStart()));
 
         assertThat(hasTodayTodo).isTrue();
 
-        // 2) 새로 추가한 is_done(또는 isDone) 값이 정상적으로 가져와졌는지(기본값 0/false) 확인
+        // 2) 새로 추가한 isDone 값이 기본값(false/0)으로 정상 설정되었는지 확인
         CalendarResponseDto targetTodo = calendarList.stream()
-                .filter(calendar -> calendar.getStart().equals("2026-08-18"))
+                .filter(calendar -> todayStr.equals(calendar.getStart()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("테스트용 할 일을 찾을 수 없습니다."));
 

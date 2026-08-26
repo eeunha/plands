@@ -1,11 +1,11 @@
 package com.plands.backend.controller;
 
+import com.plands.backend.auth.SecurityUtils;
 import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.request.TodoStatusRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 import com.plands.backend.service.CalendarService;
-import com.plands.backend.service.MemberService;
 import com.plands.backend.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,27 +21,9 @@ import java.util.List;
 @RequestMapping("/api/todo")
 @RequiredArgsConstructor
 public class TodoController {
-    private final MemberService memberService;
     private final TodoService todoService;
     private final CalendarService calendarService;
-
-    // UserDetails에서 memberId를 안전하게 꺼내오는 든든한 헬퍼 메서드!
-    private Long getAuthenticatedMemberId(UserDetails userDetails) {
-
-        // 1. 토큰의 Subject에서 로그인한 유저의 이메일(혹은 소셜 식별 아이디) 추출
-        String email = userDetails.getUsername();
-
-        log.debug("[인증] 유저 이메일로 memberId 조회 시작 -> {}", email);
-
-        // 2. memberService를 통해 DB에서 해당 이메일을 가진 진짜 회원 정보(memberId) 찾아 진짜 유저 고유 ID(PK) 꺼내기
-        return memberService.findByEmail(email)
-                .orElseThrow(() -> {
-                    // 예외가 터지기 직전에 경고 로그를 남겨두면 나중에 서버 관리자가 보기 편함!
-                    log.warn("[인증 실패] 존재하지 않는 유저 이메일 접근 시도: {}", email);
-                    return new IllegalArgumentException("🚨 에러: 토큰 정보에 해당하는 회원이 DB에 없습니다!");
-                })
-                .getMemberId();
-    }
+    private final SecurityUtils securityUtils;
 
     // 프론트(FullCalendar)가 요청하는 기간(startDate, endDate)을 파라미터로 직접 바인딩함
     @GetMapping
@@ -49,7 +31,7 @@ public class TodoController {
 
         log.info("====== 달력 목록 조회 컨트롤러 진입 ======");
 
-        Long memberId = getAuthenticatedMemberId(userDetails);
+        Long memberId = securityUtils.getCurrentMemberId();
 
         log.debug("🔍 DB에서 조회된 진짜 회원 번호(memberId) -> {}", memberId);
         log.debug("요청 파라미터 -> startDate: {}, endDate: {}", startDate, endDate);
@@ -68,7 +50,7 @@ public class TodoController {
         log.info("====== 할 일 등록 컨트롤러 진입 ======");
         log.debug("프론트에서 넘어온 데이터: {}", todoRequestDto.toString());
 
-        Long memberId = getAuthenticatedMemberId(userDetails);
+        Long memberId = securityUtils.getCurrentMemberId();
         todoRequestDto.setMemberId(memberId);
 
         // 💡 @RequestBody가 프론트에서 쏜 JSON 데이터를 자바 DTO 객체(참조변수 주소값)로 찰떡같이 변환해줘!
@@ -108,7 +90,7 @@ public class TodoController {
         log.info("====== 할 일 완료 상태 변경 컨트롤러 진입 ======");
         log.debug("상태를 변경할 할 일 ID: {}", todoId);
 
-        Long memberId = getAuthenticatedMemberId(userDetails);
+        Long memberId = securityUtils.getCurrentMemberId();
 
         todoService.modifyTodoStatus(todoId, memberId, requestDto.getIsDone());
 
@@ -121,7 +103,7 @@ public class TodoController {
         log.info("====== 할 일 삭제 컨트롤러 진입 ======");
         log.debug("프론트에서 넘어온 삭제 대상 ID: {}", todoId);
 
-        Long memberId = getAuthenticatedMemberId(userDetails);
+        Long memberId = securityUtils.getCurrentMemberId();
 
         todoService.removeTodo(todoId, memberId);
 

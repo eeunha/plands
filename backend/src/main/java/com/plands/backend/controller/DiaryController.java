@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 한 줄 일기(Diary) 관련 API 요청을 처리하는 컨트롤러
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/diary")
@@ -21,11 +24,12 @@ public class DiaryController {
     private final DiaryService diaryService;
     private final SecurityUtils securityUtils;
 
-    // 새 한 줄 일기 등록 API
+    /**
+     * 새 한 줄 일기를 등록
+     */
     @PostMapping
     public ResponseEntity<String> createDiary(@ModelAttribute DiaryCreateRequestDto requestDto) {
-
-        log.info("====== 한 줄 일기 등록 컨트롤러 진입 ======");
+        log.debug("====== 한 줄 일기 등록 컨트롤러 진입 ======");
 
         Long memberId = securityUtils.getCurrentMemberId();
 
@@ -34,31 +38,31 @@ public class DiaryController {
         return ResponseEntity.ok("일기가 성공적으로 등록되었습니다.");
     }
 
-    // 한 줄 일기 목록 조회 API
+    /**
+     * 특정 기간(startDate ~ endDate) 동안의 한 줄 일기 목록을 조회한다.
+     */
     @GetMapping
-    public ResponseEntity<List<DiaryResponseDto>> getDiaryList(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
+    public ResponseEntity<List<DiaryResponseDto>> getDiaryList(@RequestParam("startDate") String startDate,
+                                                               @RequestParam("endDate") String endDate) {
+        log.debug("====== 한 줄 일기 목록 조회 컨트롤러 진입 ======");
 
-        log.info("====== 한 줄 일기 목록 조회 컨트롤러 진입 ======");
-
-        // 1. 시큐리티 세션에서 유저 고유 PK(memberId) 안전하게 추출
         Long memberId = securityUtils.getCurrentMemberId();
 
         log.debug("🔍 DB에서 조회된 진짜 회원 번호(memberId) -> {}", memberId);
         log.debug("요청 파라미터 -> startDate: {}, endDate: {}", startDate, endDate);
 
-        // 2. 서비스 레이어를 통해 월별 일기 목록 조회
         List<DiaryResponseDto> diaryList = diaryService.findDiaryList(memberId, startDate, endDate);
-
-        log.info("[일기 목록 조회 성공] memberId={}, 조회 건수: {}건", memberId, diaryList.size());
 
         return ResponseEntity.ok(diaryList);
     }
 
+    /**
+     * 기존 한 줄 일기를 수정
+     */
     @PostMapping("/{diaryId}")
     public ResponseEntity<Void> updateDiary(@PathVariable Long diaryId,
                                             @ModelAttribute DiaryUpdateRequestDto requestDto) {
-        log.info("====== 한 줄 일기 수정 컨트롤러 진입 ======");
-        log.debug("프론트에서 넘어온 수정 대상 ID: {}", diaryId);
+        log.debug("====== 한 줄 일기 수정 컨트롤러 진입 - diaryId: {} ======", diaryId);
 
         Long memberId = securityUtils.getCurrentMemberId();
 
@@ -67,15 +71,16 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
-    // 한 줄 일기 삭제 API
+    /**
+     * 특정 한 줄 일기 삭제
+     */
     @DeleteMapping("/{diaryId}")
     public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId) {
-        log.info("====== 한 줄 일기 삭제 컨트롤러 진입 ======");
-        log.debug("프론트에서 넘어온 삭제 대상 ID: {}", diaryId);
+        log.debug("====== 한 줄 일기 삭제 컨트롤러 진입 - diaryId: {} ======", diaryId);
 
-        Long curUserId = securityUtils.getCurrentMemberId();
+        Long memberId = securityUtils.getCurrentMemberId();
 
-        diaryService.deleteDiary(diaryId, curUserId);
+        diaryService.deleteDiary(diaryId, memberId);
 
         return ResponseEntity.ok().build();
     }

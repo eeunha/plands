@@ -10,8 +10,6 @@ import com.plands.backend.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,7 +25,7 @@ public class TodoController {
 
     // 프론트(FullCalendar)가 요청하는 기간(startDate, endDate)을 파라미터로 직접 바인딩함
     @GetMapping
-    public ResponseEntity<List<CalendarResponseDto>> getTodoCalendarList(@AuthenticationPrincipal UserDetails userDetails, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
+    public ResponseEntity<List<CalendarResponseDto>> getTodoCalendarList(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
 
         log.info("====== 달력 목록 조회 컨트롤러 진입 ======");
 
@@ -45,7 +43,7 @@ public class TodoController {
 
     // 새 할 일 등록 API
     @PostMapping
-    public ResponseEntity<String> createTodo(@AuthenticationPrincipal UserDetails userDetails, @RequestBody TodoRequestDto todoRequestDto) { // RequestBody는 http body 내의 json 속 데이터를 dto에 매핑
+    public ResponseEntity<String> createTodo(@RequestBody TodoRequestDto todoRequestDto) { // RequestBody는 http body 내의 json 속 데이터를 dto에 매핑
 
         log.info("====== 할 일 등록 컨트롤러 진입 ======");
         log.debug("프론트에서 넘어온 데이터: {}", todoRequestDto.toString());
@@ -53,7 +51,6 @@ public class TodoController {
         Long memberId = securityUtils.getCurrentMemberId();
         todoRequestDto.setMemberId(memberId);
 
-        // 💡 @RequestBody가 프론트에서 쏜 JSON 데이터를 자바 DTO 객체(참조변수 주소값)로 찰떡같이 변환해줘!
         todoService.registerTodo(todoRequestDto);
 
         return ResponseEntity.ok("할 일이 성공적으로 등록되었습니다.");
@@ -85,7 +82,6 @@ public class TodoController {
     @PatchMapping("/{todoId}/status")
     public ResponseEntity<Void> updateTodoStatus(
             @PathVariable Long todoId,
-            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody TodoStatusRequestDto requestDto) {
         log.info("====== 할 일 완료 상태 변경 컨트롤러 진입 ======");
         log.debug("상태를 변경할 할 일 ID: {}", todoId);
@@ -99,7 +95,7 @@ public class TodoController {
 
     // 할 일 삭제 API (Soft Delete)
     @DeleteMapping("/{todoId}")
-    public ResponseEntity<Void> deleteTodo(@PathVariable Long todoId, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Void> deleteTodo(@PathVariable Long todoId) {
         log.info("====== 할 일 삭제 컨트롤러 진입 ======");
         log.debug("프론트에서 넘어온 삭제 대상 ID: {}", todoId);
 

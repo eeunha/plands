@@ -8,8 +8,6 @@ import com.plands.backend.service.DiaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +23,7 @@ public class DiaryController {
 
     // 새 한 줄 일기 등록 API
     @PostMapping
-    public ResponseEntity<String> createDiary(@AuthenticationPrincipal UserDetails userDetails,
-                                              @ModelAttribute DiaryCreateRequestDto requestDto) {
+    public ResponseEntity<String> createDiary(@ModelAttribute DiaryCreateRequestDto requestDto) {
 
         log.info("====== 한 줄 일기 등록 컨트롤러 진입 ======");
 
@@ -39,7 +36,7 @@ public class DiaryController {
 
     // 한 줄 일기 목록 조회 API
     @GetMapping
-    public ResponseEntity<List<DiaryResponseDto>> getDiaryList(@AuthenticationPrincipal UserDetails userDetails, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
+    public ResponseEntity<List<DiaryResponseDto>> getDiaryList(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
 
         log.info("====== 한 줄 일기 목록 조회 컨트롤러 진입 ======");
 
@@ -59,8 +56,7 @@ public class DiaryController {
 
     @PostMapping("/{diaryId}")
     public ResponseEntity<Void> updateDiary(@PathVariable Long diaryId,
-                                            @ModelAttribute DiaryUpdateRequestDto requestDto,
-                                            @AuthenticationPrincipal UserDetails userDetails) {
+                                            @ModelAttribute DiaryUpdateRequestDto requestDto) {
         log.info("====== 한 줄 일기 수정 컨트롤러 진입 ======");
         log.debug("프론트에서 넘어온 수정 대상 ID: {}", diaryId);
 
@@ -73,7 +69,7 @@ public class DiaryController {
 
     // 한 줄 일기 삭제 API
     @DeleteMapping("/{diaryId}")
-    public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId) {
         log.info("====== 한 줄 일기 삭제 컨트롤러 진입 ======");
         log.debug("프론트에서 넘어온 삭제 대상 ID: {}", diaryId);
 

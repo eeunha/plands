@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 달력 관련 API 요청을 처리하는 컨트롤러
+ * 달력 및 회원 관련 부가 기능 API 요청을 처리하는 컨트롤러
  */
 @Slf4j
 @RestController
@@ -30,9 +30,8 @@ public class CalendarController {
      */
     @GetMapping("/member-plant")
     public ResponseEntity<List<MemberPlantResponseDto>> getMemberPlants() {
-        log.debug("====== 회원 식물 목록 조회 컨트롤러 진입 ======");
-
         Long memberId = securityUtil.getCurrentMemberId();
+        log.debug("회원 식물 목록 조회 - memberId: {}", memberId);
 
         List<MemberPlantResponseDto> list = todoService.findMemberPlantList(memberId);
 

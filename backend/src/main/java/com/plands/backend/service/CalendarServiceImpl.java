@@ -10,15 +10,14 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor // final이 붙은 todoMapper의 생성자를 자동으로 주입해 줌
+@RequiredArgsConstructor
 public class CalendarServiceImpl implements CalendarService {
 
     private final TodoMapper todoMapper;
 
     @Override
     public List<CalendarResponseDto> findCalendarList(Long memberId, String startDate, String endDate) {
-        log.info("====== 캘린더 서비스 레이어 DB 호출 ======");
-        log.debug("조회 유저 ID: {}, 조회 기간(한 달): {} ~ {}", memberId, startDate, endDate);
+        log.debug("캘린더 목록 조회 DB 호출 - memberId: {}, range: {} ~ {}", memberId, startDate, endDate);
 
         return todoMapper.selectCalendarList(memberId, startDate, endDate);
     }

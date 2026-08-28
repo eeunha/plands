@@ -29,9 +29,8 @@ public class DiaryController {
      */
     @PostMapping
     public ResponseEntity<String> createDiary(@ModelAttribute DiaryCreateRequestDto requestDto) {
-        log.debug("====== 한 줄 일기 등록 컨트롤러 진입 ======");
-
         Long memberId = securityUtils.getCurrentMemberId();
+        log.debug("한 줄 일기 등록 - memberId: {}", memberId);
 
         diaryService.registerDiary(memberId, requestDto);
 
@@ -44,12 +43,8 @@ public class DiaryController {
     @GetMapping
     public ResponseEntity<List<DiaryResponseDto>> getDiaryList(@RequestParam("startDate") String startDate,
                                                                @RequestParam("endDate") String endDate) {
-        log.debug("====== 한 줄 일기 목록 조회 컨트롤러 진입 ======");
-
         Long memberId = securityUtils.getCurrentMemberId();
-
-        log.debug("🔍 DB에서 조회된 진짜 회원 번호(memberId) -> {}", memberId);
-        log.debug("요청 파라미터 -> startDate: {}, endDate: {}", startDate, endDate);
+        log.debug("한 줄 일기 목록 조회 - memberId: {}, range: {} ~ {}", memberId, startDate, endDate);
 
         List<DiaryResponseDto> diaryList = diaryService.findDiaryList(memberId, startDate, endDate);
 
@@ -62,9 +57,8 @@ public class DiaryController {
     @PostMapping("/{diaryId}")
     public ResponseEntity<Void> updateDiary(@PathVariable Long diaryId,
                                             @ModelAttribute DiaryUpdateRequestDto requestDto) {
-        log.debug("====== 한 줄 일기 수정 컨트롤러 진입 - diaryId: {} ======", diaryId);
-
         Long memberId = securityUtils.getCurrentMemberId();
+        log.debug("한 줄 일기 수정 - diaryId: {}, memberId: {}", diaryId, memberId);
 
         diaryService.modifyDiary(diaryId, memberId, requestDto);
 
@@ -76,9 +70,8 @@ public class DiaryController {
      */
     @DeleteMapping("/{diaryId}")
     public ResponseEntity<Void> deleteDiary(@PathVariable Long diaryId) {
-        log.debug("====== 한 줄 일기 삭제 컨트롤러 진입 - diaryId: {} ======", diaryId);
-
         Long memberId = securityUtils.getCurrentMemberId();
+        log.debug("한 줄 일기 삭제 - diaryId: {}, memberId: {}", diaryId, memberId);
 
         diaryService.deleteDiary(diaryId, memberId);
 

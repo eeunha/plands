@@ -31,12 +31,8 @@ public class TodoController {
      */
     @GetMapping
     public ResponseEntity<List<CalendarResponseDto>> getTodoCalendarList(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
-        log.debug("====== 달력 목록 조회 컨트롤러 진입 ======");
-
         Long memberId = securityUtils.getCurrentMemberId();
-
-        log.debug("🔍 DB에서 조회된 진짜 회원 번호(memberId) -> {}", memberId);
-        log.debug("요청 파라미터 -> startDate: {}, endDate: {}", startDate, endDate);
+        log.debug("달력 목록 조회 - memberId: {}, range: {} ~ {}", memberId, startDate, endDate);
 
         List<CalendarResponseDto> todoList = calendarService.findCalendarList(memberId, startDate, endDate);
 
@@ -48,12 +44,10 @@ public class TodoController {
      */
     @PostMapping
     public ResponseEntity<String> createTodo(@RequestBody TodoRequestDto todoRequestDto) {
-        log.debug("====== 할 일 등록 컨트롤러 진입 ======");
-        log.debug("프론트에서 넘어온 데이터: {}", todoRequestDto.toString());
-
         Long memberId = securityUtils.getCurrentMemberId();
-        todoRequestDto.setMemberId(memberId);
+        log.debug("할 일 등록 - memberId: {}", memberId);
 
+        todoRequestDto.setMemberId(memberId);
         todoService.registerTodo(todoRequestDto);
 
         return ResponseEntity.ok("할 일이 성공적으로 등록되었습니다.");
@@ -64,7 +58,7 @@ public class TodoController {
      */
     @GetMapping("/type")
     public ResponseEntity<List<TodoTypeResponseDto>> getTodoTypes() {
-        log.debug("====== 할 일 종류 조회 컨트롤러 진입 ======");
+        log.debug("할 일 종류 목록 전체 조회");
 
         List<TodoTypeResponseDto> list = todoService.findTodoTypeList();
 
@@ -76,7 +70,7 @@ public class TodoController {
      */
     @PutMapping("/{todoId}")
     public ResponseEntity<String> updateTodo(@PathVariable Long todoId, @RequestBody TodoRequestDto todoRequestDto) {
-        log.debug("====== 할 일 수정 컨트롤러 진입 - todoId: {} ======", todoId);
+        log.debug("할 일 수정 - todoId: {}", todoId);
 
         todoService.modifyTodo(todoId, todoRequestDto);
 
@@ -90,9 +84,8 @@ public class TodoController {
     public ResponseEntity<Void> updateTodoStatus(
             @PathVariable Long todoId,
             @RequestBody TodoStatusRequestDto requestDto) {
-        log.debug("====== 할 일 완료 상태 변경 컨트롤러 진입 - todoId: {} ======",  todoId);
-
         Long memberId = securityUtils.getCurrentMemberId();
+        log.debug("할 일 완료 상태 변경 - todoId: {}, memberId: {}", todoId, memberId);
 
         todoService.modifyTodoStatus(todoId, memberId, requestDto.getIsDone());
 
@@ -104,9 +97,8 @@ public class TodoController {
      */
     @DeleteMapping("/{todoId}")
     public ResponseEntity<Void> deleteTodo(@PathVariable Long todoId) {
-        log.debug("====== 할 일 삭제 컨트롤러 진입 - todoId: {} ======", todoId);
-
         Long memberId = securityUtils.getCurrentMemberId();
+        log.debug("할 일 삭제 - todoId: {}, memberId: {}", todoId, memberId);
 
         todoService.removeTodo(todoId, memberId);
 

@@ -1,6 +1,5 @@
 package com.plands.backend.service;
 
-import com.plands.backend.dto.DiaryDto;
 import com.plands.backend.dto.request.DiaryCreateRequestDto;
 import com.plands.backend.dto.request.DiaryUpdateRequestDto;
 import com.plands.backend.dto.response.DiaryResponseDto;

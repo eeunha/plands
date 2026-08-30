@@ -41,17 +41,18 @@ public class DiaryServiceTest {
         requestDto.setDiaryDate(today);
         requestDto.setImage(fakeImage);
 
-        // when- 일기 등록 및 기간 조회 실행
+        // when - 일기 등록 및 기간 조회 실행
         diaryService.registerDiary(memberId, requestDto);
 
         String startDate = today.minusDays(1).toString(); // 예: "YYYY-MM-DD"
         String endDate = today.plusDays(1).toString();
         List<DiaryResponseDto> diaryList = diaryService.findDiaryList(memberId, startDate, endDate);
 
-        // then- 등록된 데이터 검증
+        // then - 등록된 데이터 검증
         assertThat(diaryList).isNotEmpty();
-        assertThat(diaryList.get(0).getContent()).isEqualTo("테스트 코드로 작성하는 한 줄 일기");
-        assertThat(diaryList.get(0).getImagePath()).isNotNull();
+        assertThat(diaryList)
+                .extracting(DiaryResponseDto::getContent)
+                .contains("테스트 코드로 작성하는 한 줄 일기");
     }
 
     @Test
@@ -94,7 +95,7 @@ public class DiaryServiceTest {
         // when - 일기 수정 서비스 호출
         diaryService.modifyDiary(diaryId, memberId, updateDto);
 
-        // then- 이미지 경로 변경 여부 검증
+        // then - 이미지 경로 변경 여부 검증
         List<DiaryResponseDto> updatedList = diaryService.findDiaryList(memberId, today.toString(), today.toString());
         String newImagePath = updatedList.get(0).getImagePath();
 

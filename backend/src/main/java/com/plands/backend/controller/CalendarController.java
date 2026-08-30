@@ -12,9 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * 달력 및 회원 관련 부가 기능 API 요청을 처리하는 컨트롤러
- */
 @Slf4j
 @RestController
 @RequestMapping("/api/calendar")
@@ -24,10 +21,7 @@ public class CalendarController {
     private final TodoService todoService;
     private final SecurityUtils securityUtil;
 
-    // TODO: 식물 도메인 분리 필요 (MemberPlantController 및 MemberPlantService 신규 생성 후 이관)
-    /**
-     * 현재 로그인한 회원의 식물 목록을 조회
-     */
+    // TODO: 도메인 책임 분리를 위해 향후 MemberPlantController / MemberPlantService로 이관 필요
     @GetMapping("/member-plant")
     public ResponseEntity<List<MemberPlantResponseDto>> getMemberPlants() {
         Long memberId = securityUtil.getCurrentMemberId();

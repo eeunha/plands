@@ -76,8 +76,8 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Override
     @Transactional
-    public void deleteDiary(Long diaryId, Long curUserId) {
-        DiaryTargetDto target = getValidDiaryTarget(diaryId, curUserId);
+    public void deleteDiary(Long diaryId, Long memberId) {
+        DiaryTargetDto target = getValidDiaryTarget(diaryId, memberId);
 
         int affectedRows = diaryMapper.deleteDiary(diaryId);
         if (affectedRows != 1) {

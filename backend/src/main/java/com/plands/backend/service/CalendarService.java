@@ -7,7 +7,7 @@ import java.util.List;
 public interface CalendarService {
 
     /**
-     * 특정 회원의 지정된 기간(startDate ~ endDate) 동안의 캘린더 할 일 목록을 조회
+     * 특정 회원의 지정된 기간(startDate ~ endDate) 동안의 캘린더 할 일 목록을 조회합니다.
      *
      * @param memberId  조회할 회원의 고유 번호 (PK)
      * @param startDate 조회 시작일 (YYYY-MM-DD)

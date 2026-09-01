@@ -127,5 +127,4 @@ public class TodoServiceImpl implements TodoService {
             throw new SecurityException("해당 할 일을 삭제할 권한이 없습니다.");
         }
     }
-
 }

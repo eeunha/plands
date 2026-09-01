@@ -7,6 +7,7 @@ import com.plands.backend.dto.response.DiaryResponseDto;
 import java.util.List;
 
 public interface DiaryService {
+
     /**
      * 새로운 한 줄 일기를 등록합니다.
      *
@@ -42,10 +43,10 @@ public interface DiaryService {
      * 작성한 한 줄 일기를 삭제하고, 첨부된 이미지 파일을 서버 로컬에서 물리 삭제합니다.
      *
      * @param diaryId   삭제할 일기 ID
-     * @param curUserId 현재 로그인한 회원 ID
+     * @param memberId 삭제 요청자 회원 ID
      * @throws IllegalArgumentException 일기가 존재하지 않거나 이미 삭제된 경우
      * @throws SecurityException        본인이 작성한 일기가 아닌 경우
      * @throws IllegalStateException    DB 삭제 처리에 실패한 경우
      */
-    void deleteDiary(Long diaryId, Long curUserId);
+    void deleteDiary(Long diaryId, Long memberId);
 }

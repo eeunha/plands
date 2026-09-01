@@ -6,11 +6,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 전역 예외 처리 핸들러 클래스
+ */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 잘못된 인수나 비즈니스 로직 위반 (예: 이미 존재하는 일기 등록 등) -> 400 Bad Request
+    /**
+     * 비즈니스 로직 위반 및 잘못된 인자 전달 처리 (400 Bad Request)
+     * (ex: 이미 존재하는 데이터 등록, 유효하지 않은 입력값 등)
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponseDto> handleIllegalArgumentException(IllegalArgumentException e) {
         log.warn("Business Exception: {}", e.getMessage());
@@ -19,16 +25,20 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // 서비스 레이어에 권한이 없는 경우
+    /**
+     * 접근 권한 부족 및 인증 실패 처리 (403 Forbidden)
+     */
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<ErrorResponseDto> handleSecurityException(SecurityException e) {
         log.warn("Security Exception (Forbidden): {}", e.getMessage());
 
         ErrorResponseDto response = new ErrorResponseDto(HttpStatus.FORBIDDEN.value(), e.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN); // 403 Forbidden 응답
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
-    // 그 외 서버 내부의 모든 예기치 못한 에러 -> 500 Internal Server Error
+    /**
+     * 예기치 못한 시스템 처리 오류 (500 Internal Server Error)
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleAllExceptions(Exception e) {
         log.error("Unexpected Server Error: {}", e.getMessage(), e);

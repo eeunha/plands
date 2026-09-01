@@ -4,19 +4,28 @@ import lombok.*;
 
 import java.util.List;
 
+/**
+ * 할 일 생성 및 수정 요청 DTO
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
 public class TodoRequestDto {
-    // MyBatis가 인서트 성공 후 생성된 PK(todo_id)를 여기에 자동으로 꽂아줄 거야!
+
+    /** 생성 완료 후 반환받을 할 일 PK (MyBatis auto-generated key) */
     private Long todoId;
 
-    private Long memberId;            // 현재 로그인한 회원 번호
-    private Long todoTypeId;          // 드롭다운에서 선택한 할 일 종류 고유 번호
-    private String dueDate;           // 선택한 날짜 (ex: "2026-06-27")
+    /** 회원 고유 번호 (PK) */
+    private Long memberId;
 
-    // 여러 식물을 담을 수 있게 Long 타입의 List로 받습니다.
+    /** 할 일 종류 고유 번호 (PK) */
+    private Long todoTypeId;
+
+    /** 할 일 수행 지정 날짜 (YYYY-MM-DD) */
+    private String dueDate;
+
+    /** 연결할 회원 식물 고유 번호 목록 (PK List) */
     private List<Long> memberPlantIds;
 }

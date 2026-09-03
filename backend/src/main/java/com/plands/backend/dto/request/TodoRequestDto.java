@@ -12,7 +12,6 @@ import java.util.List;
  * 할 일 생성 및 수정 요청 DTO
  */
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString

@@ -32,22 +32,14 @@ public class TodoServiceTest {
     void registerAndFindTodoTest() {
         // given - 테스트용 할 일 요청 데이터 생성
         Long memberId = 1L;
-
         LocalDate today = LocalDate.now();
         String todayStr = today.toString();
 
-        TodoRequestDto todoRequestDto = new TodoRequestDto();
-        todoRequestDto.setMemberId(memberId);
-        todoRequestDto.setTodoTypeId(1L);
-        todoRequestDto.setDueDate(todayStr);
-
-        List<Long> memberPlantIds = new ArrayList<>();
-        memberPlantIds.add(1L);
-        memberPlantIds.add(2L);
-        todoRequestDto.setMemberPlantIds(memberPlantIds);
+        List<Long> memberPlantIds = List.of(1L, 2L);
+        TodoRequestDto todoRequestDto = new TodoRequestDto(1L, todayStr, memberPlantIds);
 
         // when - 할 일 등록 및 기간 조회 발생
-        todoService.registerTodo(todoRequestDto);
+        todoService.registerTodo(memberId, todoRequestDto);
 
         String startDate = today.minusDays(1).toString(); // 예: "YYYY-MM-DD"
         String endDate = today.plusDays(1).toString();

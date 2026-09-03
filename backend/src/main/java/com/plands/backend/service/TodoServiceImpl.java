@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -22,16 +24,21 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     @Transactional
-    public void registerTodo(TodoRequestDto todoRequestDto) {
-        int affectedRows = todoMapper.insertTodo(todoRequestDto);
+    public void registerTodo(Long memberId, TodoRequestDto todoRequestDto) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("memberId", memberId);
+        params.put("dto", todoRequestDto);
+
+        int affectedRows = todoMapper.insertTodo(params);
         if (affectedRows <= 0) {
-            log.warn("등록 실패 - 마스터 정보 생성 오류: memberId = {}", todoRequestDto.getMemberId());
+            log.warn("등록 실패 - 마스터 정보 생성 오류: memberId = {}", memberId);
             throw new IllegalArgumentException("할 일 마스터 정보 등록에 실패했습니다.");
         }
 
-        saveTodoMemberPlantMappings(todoRequestDto.getTodoId(), todoRequestDto.getMemberPlantIds());
+        Long generatedTodoId = (Long) params.get("todoId");
+        saveTodoMemberPlantMappings(generatedTodoId, todoRequestDto.getMemberPlantIds());
 
-        log.info("할 일 생성 완료: todoId={}, memberId={}", todoRequestDto.getTodoId(), todoRequestDto.getMemberId());
+        log.info("할 일 생성 완료: todoId={}, memberId={}", generatedTodoId, memberId);
     }
 
     @Override
@@ -48,10 +55,8 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     @Transactional
-    public void modifyTodo(Long todoId, TodoRequestDto todoRequestDto) {
-        todoRequestDto.setTodoId(todoId);
-
-        int affectedRows = todoMapper.updateTodo(todoRequestDto);
+    public void modifyTodo(Long todoId, Long memberId, TodoRequestDto todoRequestDto) {
+        int affectedRows = todoMapper.updateTodo(todoId, memberId, todoRequestDto);
         if (affectedRows != 1) {
             log.warn("할 일 수정 실패: 존재하지 않는 할 일 ID: {}", todoId);
             throw new IllegalArgumentException("존재하지 않는 할 일 ID입니다: " + todoId);
@@ -60,7 +65,7 @@ public class TodoServiceImpl implements TodoService {
         todoMapper.deleteTodoMemberPlant(todoId);
         saveTodoMemberPlantMappings(todoId, todoRequestDto.getMemberPlantIds());
 
-        log.info("할 일 수정 완료: todoId={}", todoId);
+        log.info("할 일 수정 완료: todoId={}, memberId={}", todoId, memberId);
     }
 
     @Override

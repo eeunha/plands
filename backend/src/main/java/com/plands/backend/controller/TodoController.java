@@ -7,6 +7,7 @@ import com.plands.backend.dto.response.CalendarResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 import com.plands.backend.service.CalendarService;
 import com.plands.backend.service.TodoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -36,12 +37,12 @@ public class TodoController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createTodo(@RequestBody TodoRequestDto todoRequestDto) {
-        Long memberId = securityUtils.getCurrentMemberId();
-        log.debug("할 일 등록 요청 - memberId: {}", memberId);
+    public ResponseEntity<Void> createTodo(@Valid @RequestBody TodoRequestDto todoRequestDto) {
 
-        todoRequestDto.setMemberId(memberId);
-        todoService.registerTodo(todoRequestDto);
+        Long memberId = securityUtils.getCurrentMemberId();
+        log.debug("할 일 등록 요청 - request: {}, memberId: {}", todoRequestDto, memberId);
+
+        todoService.registerTodo(memberId, todoRequestDto);
 
         return ResponseEntity.ok().build();
     }
@@ -57,17 +58,18 @@ public class TodoController {
 
     @PutMapping("/{todoId}")
     public ResponseEntity<Void> updateTodo(@PathVariable Long todoId,
-                                             @RequestBody TodoRequestDto todoRequestDto) {
-        log.debug("할 일 수정 요청 - todoId: {}", todoId);
+                                           @Valid @RequestBody TodoRequestDto todoRequestDto) {
+        Long memberId = securityUtils.getCurrentMemberId();
+        log.debug("할 일 수정 요청 - todoId: {}, memberId: {}", todoId, memberId);
 
-        todoService.modifyTodo(todoId, todoRequestDto);
+        todoService.modifyTodo(todoId, memberId, todoRequestDto);
 
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{todoId}/status")
     public ResponseEntity<Void> updateTodoStatus(@PathVariable Long todoId,
-                                                 @RequestBody TodoStatusRequestDto requestDto) {
+                                                 @Valid @RequestBody TodoStatusRequestDto requestDto) {
         Long memberId = securityUtils.getCurrentMemberId();
         log.debug("할 일 완료 상태 변경 요청 - todoId: {}, memberId: {}", todoId, memberId);
 

@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 할 일(Todo) 데이터베이스 매퍼 인터페이스
@@ -39,10 +40,10 @@ public interface TodoMapper {
     /**
      * 새로운 할 일 기본 정보를 데이터베이스에 저장합니다.
      *
-     * @param todoRequestDto 저장할 할 일 요청 DTO
+     * @param params memberId, dto, selectKey 결과(todoId)가 담길 Map
      * @return 등록된 행(Row)의 개수
      */
-    int insertTodo(TodoRequestDto todoRequestDto);
+    int insertTodo(Map<String, Object> params);
 
     /**
      * 생성된 할 일과 선택된 대표 식물 매핑 정보를 저장합니다.
@@ -71,11 +72,14 @@ public interface TodoMapper {
 
     /**
      * 할 일 기본 정보를 수정합니다.
-     *
+     * @param todoId         수정할 할 일 고유 번호 (PK)
+     * @param memberId       작성자 회원 고유 번호 (PK)
      * @param todoRequestDto 수정할 할 일 정보가 담긴 요청 DTO
      * @return 수정된 행(Row)의 개수
      */
-    int updateTodo(TodoRequestDto todoRequestDto);
+    int updateTodo(@Param("todoId") Long todoId,
+                   @Param("memberId") Long memberId,
+                   @Param("dto") TodoRequestDto todoRequestDto);
 
     /**
      * 할 일의 완료 상태(isDone)를 변경합니다.

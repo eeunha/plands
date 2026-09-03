@@ -91,7 +91,7 @@
     <!-- [생성 - Create] -->
     <!-- ================================================================= -->
     <!-- 1. 투두 기본 정보 생성 (생성 후 PK값 반환) -->
-    <insert id="insertTodo" parameterType="com.plands.backend.dto.request.TodoRequestDto">
+    <insert id="insertTodo" parameterType="map">
         <selectKey keyProperty="todoId" resultType="long" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
@@ -101,8 +101,8 @@
             due_date
         ) VALUES (
             #{memberId},
-            #{todoTypeId},
-            #{dueDate}
+            #{dto.todoTypeId},
+            #{dto.dueDate}
         )
     </insert>
 
@@ -121,13 +121,14 @@
     <!-- [수정 - Update] -->
     <!-- ================================================================= -->
     <!-- 1. 투두 정보 수정 (날짜 및 카테고리 변경) -->
-    <update id="updateTodo" parameterType="com.plands.backend.dto.request.TodoRequestDto">
+    <update id="updateTodo">
         UPDATE todo
         SET
-            todo_type_id = #{todoTypeId},
-            due_date = #{dueDate}
+            todo_type_id = #{dto.todoTypeId},
+            due_date = #{dto.dueDate}
         WHERE todo_id = #{todoId}
-          AND is_deleted = 0
+            AND member_id = #{memberId}
+            AND is_deleted = 0
     </update>
 
     <!-- 할 일 완료 상태 변경 -->

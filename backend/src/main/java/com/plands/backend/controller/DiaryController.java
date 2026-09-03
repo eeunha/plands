@@ -5,6 +5,7 @@ import com.plands.backend.dto.request.DiaryCreateRequestDto;
 import com.plands.backend.dto.request.DiaryUpdateRequestDto;
 import com.plands.backend.dto.response.DiaryResponseDto;
 import com.plands.backend.service.DiaryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class DiaryController {
     private final SecurityUtils securityUtils;
 
     @PostMapping
-    public ResponseEntity<Void> createDiary(@ModelAttribute DiaryCreateRequestDto requestDto) {
+    public ResponseEntity<Void> createDiary(@Valid @ModelAttribute DiaryCreateRequestDto requestDto) {
         Long memberId = securityUtils.getCurrentMemberId();
         log.debug("한 줄 일기 등록 요청 - memberId: {}", memberId);
 
@@ -44,9 +45,10 @@ public class DiaryController {
 
     @PostMapping("/{diaryId}")
     public ResponseEntity<Void> updateDiary(@PathVariable Long diaryId,
-                                            @ModelAttribute DiaryUpdateRequestDto requestDto) {
+                                            @Valid @ModelAttribute DiaryUpdateRequestDto requestDto) {
         Long memberId = securityUtils.getCurrentMemberId();
         log.debug("한 줄 일기 수정 요청 - diaryId: {}, memberId: {}", diaryId, memberId);
+        log.debug("requestDto: {}", requestDto);
 
         diaryService.modifyDiary(diaryId, memberId, requestDto);
 

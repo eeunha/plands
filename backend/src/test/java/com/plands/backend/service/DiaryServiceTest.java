@@ -36,10 +36,11 @@ public class DiaryServiceTest {
                 "fake image binary content".getBytes()
         );
 
-        DiaryCreateRequestDto requestDto = new DiaryCreateRequestDto();
-        requestDto.setContent("테스트 코드로 작성하는 한 줄 일기");
-        requestDto.setDiaryDate(today);
-        requestDto.setImage(fakeImage);
+        DiaryCreateRequestDto requestDto = new DiaryCreateRequestDto(
+                "테스트 코드로 작성하는 한 줄 일기",
+                today,
+                fakeImage
+        );
 
         // when - 일기 등록 및 기간 조회 실행
         diaryService.registerDiary(memberId, requestDto);
@@ -69,16 +70,19 @@ public class DiaryServiceTest {
                 "old image content".getBytes()
         );
 
-        DiaryCreateRequestDto createDto = new DiaryCreateRequestDto();
-        createDto.setContent("이미지 변경 테스트용 일기");
-        createDto.setDiaryDate(today);
-        createDto.setImage(originalImage);
-
+        String targetContent = "이미지 변경 테스트용 일기";
+        DiaryCreateRequestDto createDto = new DiaryCreateRequestDto(targetContent, today, originalImage);
         diaryService.registerDiary(memberId, createDto);
 
+        // 등록한 일기 찾기
         List<DiaryResponseDto> initialList = diaryService.findDiaryList(memberId, today.toString(), today.toString());
-        Long diaryId = initialList.get(0).getDiaryId();
-        String oldImagePath = initialList.get(0).getImagePath();
+        DiaryResponseDto createdDiary = initialList.stream()
+                .filter(d -> targetContent.equals(d.getContent()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("테스트 데이터 등록 실패"));
+
+        Long diaryId = createdDiary.getDiaryId();
+        String oldImagePath = createdDiary.getImagePath();
 
         MockMultipartFile newImage = new MockMultipartFile(
                 "image",
@@ -87,19 +91,19 @@ public class DiaryServiceTest {
                 "new image content".getBytes()
         );
 
-        DiaryUpdateRequestDto updateDto = new DiaryUpdateRequestDto();
-        updateDto.setContent("이미지만 바꿀래요");
-        updateDto.setDiaryDate(today);
-        updateDto.setImage(newImage);
+        DiaryUpdateRequestDto updateDto = new DiaryUpdateRequestDto("이미지만 바꿀래요", today, newImage);
 
         // when - 일기 수정 서비스 호출
         diaryService.modifyDiary(diaryId, memberId, updateDto);
 
         // then - 이미지 경로 변경 여부 검증
         List<DiaryResponseDto> updatedList = diaryService.findDiaryList(memberId, today.toString(), today.toString());
-        String newImagePath = updatedList.get(0).getImagePath();
+        DiaryResponseDto updatedDiary = updatedList.stream()
+                .filter(d -> d.getDiaryId().equals(diaryId))
+                .findFirst()
+                .orElseThrow();
 
-        assertThat(newImagePath).isNotNull();
-        assertThat(newImagePath).isNotEqualTo(oldImagePath);
+        assertThat(updatedDiary.getImagePath()).isNotNull();
+        assertThat(updatedDiary.getImagePath()).isNotEqualTo(oldImagePath);
     }
 }

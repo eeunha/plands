@@ -3,9 +3,8 @@ package com.plands.backend.controller;
 import com.plands.backend.auth.SecurityUtils;
 import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.request.TodoStatusRequestDto;
-import com.plands.backend.dto.response.CalendarResponseDto;
+import com.plands.backend.dto.response.TodoResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
-import com.plands.backend.service.CalendarService;
 import com.plands.backend.service.TodoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,16 +21,15 @@ import java.util.List;
 public class TodoController {
 
     private final TodoService todoService;
-    private final CalendarService calendarService;
     private final SecurityUtils securityUtils;
 
     @GetMapping
-    public ResponseEntity<List<CalendarResponseDto>> getTodoCalendarList(@RequestParam("startDate") String startDate,
-                                                                         @RequestParam("endDate") String endDate) {
+    public ResponseEntity<List<TodoResponseDto>> getTodoList(@RequestParam("startDate") String startDate,
+                                                             @RequestParam("endDate") String endDate) {
         Long memberId = securityUtils.getCurrentMemberId();
-        log.debug("달력 목록 조회 요청 - memberId: {}, range: {} ~ {}", memberId, startDate, endDate);
+        log.debug("기간별 할 일 목록 조회 요청 - memberId: {}, range: {} ~ {}", memberId, startDate, endDate);
 
-        List<CalendarResponseDto> todoList = calendarService.findCalendarList(memberId, startDate, endDate);
+        List<TodoResponseDto> todoList = todoService.findTodoList(memberId, startDate, endDate);
 
         return ResponseEntity.ok(todoList);
     }

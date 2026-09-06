@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CalendarResponseDto {
+public class TodoResponseDto {
 
     /** 할 일 고유 번호 (PK) */
     private Long id;

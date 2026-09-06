@@ -2,7 +2,7 @@ package com.plands.backend.service;
 
 import com.plands.backend.dto.TodoDeleteTargetDto;
 import com.plands.backend.dto.request.TodoRequestDto;
-import com.plands.backend.dto.response.MemberPlantResponseDto;
+import com.plands.backend.dto.response.TodoResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 import com.plands.backend.mapper.TodoMapper;
 import lombok.RequiredArgsConstructor;
@@ -43,11 +43,17 @@ public class TodoServiceImpl implements TodoService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<TodoResponseDto> findTodoList(Long memberId, String startDate, String endDate) {
+        log.debug("캘린더 목록 조회 DB 호출 - memberId: {}, range: {} ~ {}", memberId, startDate, endDate);
+
+        return todoMapper.selectTodoList(memberId, startDate, endDate);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<TodoTypeResponseDto> findTodoTypeList() {
         return todoMapper.selectTodoTypes();
     }
-
-
 
     @Override
     @Transactional

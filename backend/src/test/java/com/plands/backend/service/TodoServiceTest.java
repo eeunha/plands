@@ -1,7 +1,7 @@
 package com.plands.backend.service;
 
 import com.plands.backend.dto.request.TodoRequestDto;
-import com.plands.backend.dto.response.CalendarResponseDto;
+import com.plands.backend.dto.response.TodoResponseDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +23,6 @@ public class TodoServiceTest {
     @Autowired
     private TodoService todoService;
 
-    @Autowired
-    private CalendarService calendarService;
-
     @Test
     @DisplayName("할 일 등록 및 조회 통합 테스트")
     void registerAndFindTodoTest() {
@@ -42,7 +39,7 @@ public class TodoServiceTest {
 
         String startDate = today.minusDays(1).toString(); // 예: "YYYY-MM-DD"
         String endDate = today.plusDays(1).toString();
-        List<CalendarResponseDto> calendarList = calendarService.findCalendarList(memberId, startDate, endDate);
+        List<TodoResponseDto> calendarList = todoService.findTodoList(memberId, startDate, endDate);
 
         // then - 등록된 데이터 및 완료 상태(isDone) 기본값 검증
         boolean hasTodayTodo = calendarList.stream()
@@ -50,7 +47,7 @@ public class TodoServiceTest {
 
         assertThat(hasTodayTodo).isTrue();
 
-        CalendarResponseDto targetTodo = calendarList.stream()
+        TodoResponseDto targetTodo = calendarList.stream()
                 .filter(calendar -> todayStr.equals(calendar.getStart()))
                 .filter(calendar -> !calendar.getIsDone()) // 새로 생성된 미완료 할 일 지정
                 .findFirst()

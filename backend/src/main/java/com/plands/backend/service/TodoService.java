@@ -1,7 +1,7 @@
 package com.plands.backend.service;
 
 import com.plands.backend.dto.request.TodoRequestDto;
-import com.plands.backend.dto.response.MemberPlantResponseDto;
+import com.plands.backend.dto.response.TodoResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 
 import java.util.List;
@@ -16,6 +16,16 @@ public interface TodoService {
      * @throws IllegalArgumentException 마스터 정보 등록에 실패하거나 식물 매핑 중 오류가 발생한 경우
      */
     void registerTodo(Long memberId, TodoRequestDto todoRequestDto);
+
+    /**
+     * 특정 회원의 지정된 기간(startDate ~ endDate) 동안의 할 일 목록을 조회합니다.
+     *
+     * @param memberId  조회할 회원의 고유 번호 (PK)
+     * @param startDate 조회 시작일 (YYYY-MM-DD)
+     * @param endDate   조회 종료일 (YYYY-MM-DD)
+     * @return 캘린더 응답 DTO 리스트
+     */
+    List<TodoResponseDto> findTodoList(Long memberId, String startDate, String endDate);
 
     /**
      * 시스템에 등록된 할 일 종류 목록 전체를 조회합니다.

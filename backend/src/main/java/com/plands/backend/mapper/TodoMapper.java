@@ -2,7 +2,7 @@ package com.plands.backend.mapper;
 
 import com.plands.backend.dto.TodoDeleteTargetDto;
 import com.plands.backend.dto.request.TodoRequestDto;
-import com.plands.backend.dto.response.CalendarResponseDto;
+import com.plands.backend.dto.response.TodoResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -24,9 +24,9 @@ public interface TodoMapper {
      * @param endDate   조회 종료일 (YYYY-MM-DD)
      * @return 캘린더 일자별 할 일 응답 DTO 리스트
      */
-    List<CalendarResponseDto> selectCalendarList(@Param("memberId") Long memberId,
-                                                 @Param("startDate") String startDate,
-                                                 @Param("endDate") String endDate);
+    List<TodoResponseDto> selectTodoList(@Param("memberId") Long memberId,
+                                         @Param("startDate") String startDate,
+                                         @Param("endDate") String endDate);
 
     /**
      * 삭제 대상 할 일의 정보(작성자, 연관 데이터 등)를 조회합니다.

@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -53,6 +52,7 @@ public class TodoServiceTest {
 
         CalendarResponseDto targetTodo = calendarList.stream()
                 .filter(calendar -> todayStr.equals(calendar.getStart()))
+                .filter(calendar -> !calendar.getIsDone()) // 새로 생성된 미완료 할 일 지정
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("테스트용 할 일을 찾을 수 없습니다."));
 

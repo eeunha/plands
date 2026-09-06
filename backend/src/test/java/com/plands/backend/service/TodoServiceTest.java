@@ -2,6 +2,7 @@ package com.plands.backend.service;
 
 import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.response.TodoResponseDto;
+import com.plands.backend.mapper.TodoMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class TodoServiceTest {
 
     @Autowired
     private TodoService todoService;
+
+    @Autowired
+    private TodoMapper todoMapper;
 
     @Test
     @DisplayName("할 일 등록 및 조회 통합 테스트")
@@ -80,5 +84,19 @@ public class TodoServiceTest {
         // when & then - NoSuchElementException 예외가 정상적으로 발생하는지 검증
         assertThatThrownBy(() -> todoService.modifyTodoStatus(todoId, wrongMemberId, isDone))
                 .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    @DisplayName("식물 매핑 Batch Insert 다중 등록 검증")
+    void insertTodoMemberPlantsBatchTest() {
+        // given
+        Long todoId = 53L;
+        List<Long> memberPlantIds = List.of(1L, 2L, 3L);
+
+        // when
+        int insertedRows = todoMapper.insertTodoMemberPlants(todoId, memberPlantIds);
+
+        // then - 요청한 리스트 개수만큼 정확히 DB에 저장되었는지 검증
+        assertThat(insertedRows).isEqualTo(memberPlantIds.size());
     }
 }

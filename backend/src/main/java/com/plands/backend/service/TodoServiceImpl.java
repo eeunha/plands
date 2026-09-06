@@ -36,7 +36,7 @@ public class TodoServiceImpl implements TodoService {
         }
 
         Long generatedTodoId = (Long) params.get("todoId");
-        saveTodoMemberPlantMappings(generatedTodoId, todoRequestDto.getMemberPlantIds());
+        saveTodoMemberPlantMappingsBatch(generatedTodoId, todoRequestDto.getMemberPlantIds());
 
         log.info("할 일 생성 완료: todoId={}, memberId={}", generatedTodoId, memberId);
     }
@@ -65,7 +65,7 @@ public class TodoServiceImpl implements TodoService {
         }
 
         todoMapper.deleteTodoMemberPlant(todoId);
-        saveTodoMemberPlantMappings(todoId, todoRequestDto.getMemberPlantIds());
+        saveTodoMemberPlantMappingsBatch(todoId, todoRequestDto.getMemberPlantIds());
 
         log.info("할 일 수정 완료: todoId={}, memberId={}", todoId, memberId);
     }
@@ -106,18 +106,18 @@ public class TodoServiceImpl implements TodoService {
     // Helper Methods (검증 및 매핑 세부 로직 분리)
     // =========================================================================
 
-    private void saveTodoMemberPlantMappings(Long todoId, List<Long> memberPlantIds) {
+    // MyBatis <foreach> Batch Insert
+    private void saveTodoMemberPlantMappingsBatch(Long todoId, List<Long> memberPlantIds) {
         if (memberPlantIds == null || memberPlantIds.isEmpty()) {
             return;
         }
 
-        for (Long memberPlantId : memberPlantIds) {
-            int insertedRows = todoMapper.insertTodoMemberPlant(todoId, memberPlantId);
+        int insertedRows = todoMapper.insertTodoMemberPlants(todoId, memberPlantIds);
 
-            if (insertedRows <= 0) {
-                log.warn("식물 매핑 등록 실패: todoId={}, memberPlantId={}", todoId, memberPlantId);
-                throw new IllegalArgumentException("식물 매핑 정보 등록에 실패했습니다. id=" + memberPlantId);
-            }
+        if (insertedRows != memberPlantIds.size()) {
+            log.warn("식물 매핑 Batch 등록 실패: todoId={}, expectedSize={}, insertedRows={}",
+                    todoId, memberPlantIds.size(), insertedRows);
+            throw new IllegalArgumentException("식물 매핑 정보 일괄 등록 중 오류가 발생했습니다.");
         }
     }
 

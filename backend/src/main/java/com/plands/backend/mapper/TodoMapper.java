@@ -45,14 +45,14 @@ public interface TodoMapper {
     int insertTodo(Map<String, Object> params);
 
     /**
-     * 생성된 할 일과 선택된 대표 식물 매핑 정보를 저장합니다.
+     * 생성된 할 일과 선택된 여러 식물의 매핑 정보를 한 번에 저장(Batch Insert)합니다.
      *
-     * @param todoId        할 일 고유 번호 (PK)
-     * @param memberPlantId 회원 식물 고유 번호 (PK)
+     * @param todoId         할 일 고유 번호 (PK)
+     * @param memberPlantIds 회원 식물 고유 번호 리스트
      * @return 등록된 행(Row)의 개수
      */
-    int insertTodoMemberPlant(@Param("todoId") Long todoId,
-                              @Param("memberPlantId") Long memberPlantId);
+    int insertTodoMemberPlants(@Param("todoId") Long todoId,
+                               @Param("memberPlantIds") List<Long> memberPlantIds);
 
     /**
      * 전체 할 일 종류(타입) 목록을 조회합니다.

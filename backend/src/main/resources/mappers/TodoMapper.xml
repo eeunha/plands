@@ -76,7 +76,8 @@
     <!-- ================================================================= -->
     <!-- [생성 - Create] -->
     <!-- ================================================================= -->
-    <!-- 1. 투두 기본 정보 생성 (생성 후 PK값 반환) -->
+
+    <!-- 투두 기본 정보 생성 (생성 후 PK값 반환) -->
     <insert id="insertTodo" parameterType="map">
         <selectKey keyProperty="todoId" resultType="long" order="AFTER">
             SELECT LAST_INSERT_ID()
@@ -92,21 +93,21 @@
         )
     </insert>
 
-    <!-- 2. 투두와 반려 식물 간의 다대다(N:M) 매핑 데이터 생성 -->
-    <insert id="insertTodoMemberPlant">
-        INSERT INTO todo_member_plant (
+    <!-- 투두와 반려 식물 간의 다대다(N:M) 매핑 데이터 다중 생성 (Batch Insert) -->
+    <insert id="insertTodoMemberPlants">
+        INSERT INTO todo_member_plant(
             todo_id,
             member_plant_id
-        ) VALUES (
-            #{todoId},
-            #{memberPlantId}
-        )
+        ) VALUES
+        <foreach collection="memberPlantIds" item="plantId" separator=",">
+            (#{todoId}, #{plantId})
+        </foreach>
     </insert>
 
     <!-- ================================================================= -->
     <!-- [수정 - Update] -->
     <!-- ================================================================= -->
-    <!-- 1. 투두 정보 수정 (날짜 및 카테고리 변경) -->
+    <!-- 투두 정보 수정 (날짜 및 카테고리 변경) -->
     <update id="updateTodo">
         UPDATE todo
         SET
@@ -130,13 +131,13 @@
     <!-- ================================================================= -->
     <!-- [삭제 - Delete] -->
     <!-- ================================================================= -->
-    <!-- 1. 투두 수정/삭제 시 기존 식물 매핑 데이터 초기화 -->
+    <!-- 투두 수정/삭제 시 기존 식물 매핑 데이터 초기화 -->
     <delete id="deleteTodoMemberPlant">
         DELETE FROM todo_member_plant
         WHERE todo_id = #{todoId}
     </delete>
 
-    <!-- 2. 투두 삭제 (소프트 딜리트 - 안전장치 포함) -->
+    <!-- 투두 삭제 (소프트 딜리트 - 안전장치 포함) -->
     <update id="updateTodoIsDeleted">
         UPDATE todo
         SET is_deleted = 1

@@ -2,7 +2,7 @@ package com.plands.backend.controller;
 
 import com.plands.backend.auth.SecurityUtils;
 import com.plands.backend.dto.response.MemberPlantResponseDto;
-import com.plands.backend.service.TodoService;
+import com.plands.backend.service.MemberPlantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,20 +14,19 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/calendar")
+@RequestMapping("/api/member-plant")
 @RequiredArgsConstructor
-public class CalendarController {
+public class MemberPlantController {
 
-    private final TodoService todoService;
+    private final MemberPlantService memberPlantService;
     private final SecurityUtils securityUtil;
 
-    // TODO: 도메인 책임 분리를 위해 향후 MemberPlantController / MemberPlantService로 이관 필요
-    @GetMapping("/member-plant")
+    @GetMapping
     public ResponseEntity<List<MemberPlantResponseDto>> getMemberPlants() {
         Long memberId = securityUtil.getCurrentMemberId();
         log.debug("회원 식물 목록 조회 - memberId: {}", memberId);
 
-        List<MemberPlantResponseDto> list = todoService.findMemberPlantList(memberId);
+        List<MemberPlantResponseDto> list = memberPlantService.findMemberPlantList(memberId);
 
         return ResponseEntity.ok(list);
     }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.plands.backend.mapper.MemberPlantMapper">
+
+    <!-- 투두 등록 폼용: 회원의 반려 식물 리스트 조회 -->
+    <select id="selectMemberPlants" resultType="com.plands.backend.dto.response.MemberPlantResponseDto">
+        SELECT
+            mp.member_plant_id AS memberPlantId,
+            p.name AS plantName
+        FROM member_plant mp
+                 JOIN plant p ON mp.plant_id = p.plant_id
+        WHERE mp.member_id = #{memberId}
+          AND mp.is_deleted = 0
+          AND p.is_deleted = 0
+        ORDER BY
+            mp.member_plant_id ASC
+    </select>
+</mapper>

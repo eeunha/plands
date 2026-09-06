@@ -3,7 +3,6 @@ package com.plands.backend.mapper;
 import com.plands.backend.dto.TodoDeleteTargetDto;
 import com.plands.backend.dto.request.TodoRequestDto;
 import com.plands.backend.dto.response.CalendarResponseDto;
-import com.plands.backend.dto.response.MemberPlantResponseDto;
 import com.plands.backend.dto.response.TodoTypeResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -61,14 +60,6 @@ public interface TodoMapper {
      * @return 할 일 종류 응답 DTO 리스트
      */
     List<TodoTypeResponseDto> selectTodoTypes();
-
-    /**
-     * 특정 회원이 등록한 식물 목록을 조회합니다.
-     *
-     * @param memberId 회원 고유 번호 (PK)
-     * @return 회원의 식물 목록 응답 DTO 리스트
-     */
-    List<MemberPlantResponseDto> selectMemberPlants(Long memberId);
 
     /**
      * 할 일 기본 정보를 수정합니다.

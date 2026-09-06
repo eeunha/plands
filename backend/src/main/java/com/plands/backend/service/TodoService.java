@@ -25,14 +25,6 @@ public interface TodoService {
     List<TodoTypeResponseDto> findTodoTypeList();
 
     /**
-     * 특정 회원이 보유한 식물 목록을 조회합니다.
-     *
-     * @param memberId 조회할 회원의 고유 번호 (PK)
-     * @return 회원의 식물 목록 응답 DTO 리스트
-     */
-    List<MemberPlantResponseDto> findMemberPlantList(Long memberId);
-
-    /**
      * 기존 할 일 정보(내용, 날짜 등)를 수정하고 식물 매핑 정보를 재설정합니다.
      *
      * @param todoId         수정할 할 일 고유 번호 (PK)

@@ -69,7 +69,7 @@ export function useCalendarApi() {
     // 2. 캐시된 정보 없을 때
     error.value = null
     try {
-      const res = await api.get('/api/calendar/member-plant')
+      const res = await api.get('/api/member-plant')
       cachedMemberPlants.value = res.data
       return res.data
     } catch (err) {

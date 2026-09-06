@@ -47,11 +47,7 @@ public class TodoServiceImpl implements TodoService {
         return todoMapper.selectTodoTypes();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<MemberPlantResponseDto> findMemberPlantList(Long memberId) {
-        return todoMapper.selectMemberPlants(memberId);
-    }
+
 
     @Override
     @Transactional
